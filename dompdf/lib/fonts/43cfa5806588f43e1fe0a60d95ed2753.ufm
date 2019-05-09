@@ -1,0 +1,242 @@
+StartFontMetrics 4.1
+Notice Converted by PHP-font-lib
+Comment https://github.com/PhenX/php-font-lib
+EncodingScheme FontSpecific
+Copyright Copyright (C) 2012 by Daniel Bruce
+FontName Entypo
+FontSubfamily Medium
+UniqueID FontForge 2.0 : Entypo : 11-11-2012
+FullName Entypo
+Version Version 1.0 ; ttfautohint (v0.8) -f -G 200 -r 50 -s
+PostScriptName entypo
+Weight Bold
+ItalicAngle 0
+IsFixedPitch false
+UnderlineThickness 50
+UnderlinePosition -125
+FontHeightOffset 90
+Ascender 852
+Descender -150
+FontBBox 15 -150 1017 850
+StartCharMetrics 285
+U 43 ; WX 610 ; N plus ; G 3
+U 45 ; WX 610 ; N hyphen ; G 4
+U 8505 ; WX 490 ; N glyph30 ; G 31
+U 8592 ; WX 1010 ; N glyph140 ; G 141
+U 8593 ; WX 530 ; N glyph142 ; G 143
+U 8594 ; WX 1010 ; N glyph141 ; G 142
+U 8595 ; WX 530 ; N glyph139 ; G 140
+U 8624 ; WX 880 ; N glyph147 ; G 148
+U 8627 ; WX 774 ; N glyph146 ; G 147
+U 8646 ; WX 1030 ; N glyph150 ; G 151
+U 8734 ; WX 1030 ; N glyph194 ; G 195
+U 8862 ; WX 830 ; N glyph24 ; G 26
+U 8863 ; WX 830 ; N glyph27 ; G 28
+U 8962 ; WX 930 ; N glyph33 ; G 34
+U 9000 ; WX 1030 ; N glyph58 ; G 59
+U 9003 ; WX 1032 ; N glyph195 ; G 196
+U 9097 ; WX 560 ; N glyph153 ; G 154
+U 9193 ; WX 910 ; N glyph157 ; G 158
+U 9194 ; WX 910 ; N glyph158 ; G 159
+U 9197 ; WX 630 ; N glyph155 ; G 156
+U 9198 ; WX 630 ; N glyph156 ; G 157
+U 9203 ; WX 590 ; N glyph99 ; G 100
+U 9632 ; WX 630 ; N glyph152 ; G 153
+U 9652 ; WX 490 ; N glyph134 ; G 135
+U 9654 ; WX 530 ; N glyph151 ; G 152
+U 9656 ; WX 430 ; N glyph133 ; G 134
+U 9662 ; WX 490 ; N glyph131 ; G 132
+U 9666 ; WX 430 ; N glyph132 ; G 133
+U 9681 ; WX 1030 ; N glyph103 ; G 104
+U 9729 ; WX 1030 ; N glyph178 ; G 179
+U 9733 ; WX 910 ; N glyph8 ; G 11
+U 9734 ; WX 910 ; N glyph9 ; G 12
+U 9749 ; WX 711 ; N glyph70 ; G 71
+U 9776 ; WX 730 ; N glyph17 ; G 20
+U 9789 ; WX 850 ; N glyph181 ; G 182
+U 9825 ; WX 890 ; N glyph7 ; G 10
+U 9829 ; WX 890 ; N glyph6 ; G 9
+U 9834 ; WX 612 ; N glyph0 ; G 5
+U 9835 ; WX 770 ; N glyph1 ; G 1
+U 9871 ; WX 630 ; N glyph16 ; G 19
+U 9873 ; WX 930 ; N glyph42 ; G 43
+U 9874 ; WX 1030 ; N glyph86 ; G 87
+U 9881 ; WX 870 ; N glyph85 ; G 86
+U 9888 ; WX 992 ; N glyph62 ; G 63
+U 9889 ; WX 430 ; N glyph180 ; G 181
+U 9899 ; WX 730 ; N glyph154 ; G 155
+U 9928 ; WX 1030 ; N glyph179 ; G 180
+U 9991 ; WX 1030 ; N glyph200 ; G 201
+U 9992 ; WX 1033 ; N glyph182 ; G 183
+U 9993 ; WX 930 ; N glyph5 ; G 8
+U 9998 ; WX 810 ; N glyph54 ; G 55
+U 10002 ; WX 728 ; N glyph55 ; G 56
+U 10003 ; WX 697 ; N glyph18 ; G 21
+U 10005 ; WX 500 ; N glyph19 ; G 22
+U 10006 ; WX 870 ; N glyph20 ; G 23
+U 10062 ; WX 830 ; N glyph21 ; G 24
+U 10067 ; WX 610 ; N glyph28 ; G 29
+U 10078 ; WX 792 ; N glyph51 ; G 52
+U 10133 ; WX 870 ; N glyph23 ; G 25
+U 10134 ; WX 870 ; N glyph26 ; G 27
+U 10145 ; WX 760 ; N glyph129 ; G 130
+U 10146 ; WX 890 ; N glyph68 ; G 69
+U 10150 ; WX 930 ; N glyph50 ; G 51
+U 10226 ; WX 970 ; N glyph143 ; G 144
+U 10227 ; WX 970 ; N glyph144 ; G 145
+U 11013 ; WX 760 ; N glyph128 ; G 129
+U 11014 ; WX 690 ; N glyph130 ; G 131
+U 11015 ; WX 690 ; N glyph127 ; G 128
+U 57347 ; WX 1030 ; N glyph166 ; G 167
+U 57349 ; WX 730 ; N glyph165 ; G 166
+U 58541 ; WX 760 ; N glyph136 ; G 137
+U 58542 ; WX 760 ; N glyph137 ; G 138
+U 58543 ; WX 790 ; N glyph138 ; G 139
+U 58544 ; WX 790 ; N glyph135 ; G 136
+U 59136 ; WX 1030 ; N glyph12 ; G 15
+U 59140 ; WX 950 ; N glyph29 ; G 30
+U 59141 ; WX 950 ; N glyph31 ; G 32
+U 59146 ; WX 1030 ; N glyph38 ; G 39
+U 59148 ; WX 990 ; N glyph39 ; G 40
+U 59153 ; WX 1030 ; N glyph47 ; G 48
+U 59154 ; WX 930 ; N glyph48 ; G 49
+U 59155 ; WX 1030 ; N glyph49 ; G 50
+U 59156 ; WX 1030 ; N glyph52 ; G 53
+U 59157 ; WX 1030 ; N glyph53 ; G 54
+U 59158 ; WX 1010 ; N glyph56 ; G 57
+U 59159 ; WX 1030 ; N glyph57 ; G 58
+U 59160 ; WX 830 ; N glyph59 ; G 60
+U 59168 ; WX 1030 ; N glyph60 ; G 61
+U 59170 ; WX 1030 ; N glyph64 ; G 65
+U 59171 ; WX 1030 ; N glyph65 ; G 66
+U 59172 ; WX 530 ; N glyph66 ; G 67
+U 59175 ; WX 1030 ; N glyph67 ; G 68
+U 59176 ; WX 990 ; N glyph69 ; G 70
+U 59177 ; WX 790 ; N glyph71 ; G 72
+U 59184 ; WX 730 ; N glyph72 ; G 73
+U 59185 ; WX 730 ; N glyph76 ; G 77
+U 59190 ; WX 1031 ; N glyph73 ; G 74
+U 59191 ; WX 1030 ; N glyph74 ; G 75
+U 59192 ; WX 1011 ; N glyph81 ; G 82
+U 59194 ; WX 790 ; N glyph83 ; G 84
+U 59196 ; WX 830 ; N glyph87 ; G 88
+U 59197 ; WX 930 ; N glyph89 ; G 90
+U 59198 ; WX 1030 ; N glyph88 ; G 89
+U 59200 ; WX 930 ; N glyph92 ; G 93
+U 59201 ; WX 930 ; N glyph93 ; G 94
+U 59202 ; WX 926 ; N glyph97 ; G 98
+U 59204 ; WX 822 ; N glyph105 ; G 106
+U 59206 ; WX 930 ; N glyph106 ; G 107
+U 59212 ; WX 830 ; N glyph107 ; G 108
+U 59213 ; WX 1030 ; N glyph108 ; G 109
+U 59214 ; WX 1030 ; N glyph109 ; G 110
+U 59215 ; WX 490 ; N glyph110 ; G 111
+U 59217 ; WX 870 ; N glyph196 ; G 197
+U 59218 ; WX 1031 ; N glyph202 ; G 203
+U 59219 ; WX 935 ; N glyph206 ; G 207
+U 59220 ; WX 730 ; N glyph211 ; G 212
+U 59221 ; WX 932 ; N glyph212 ; G 213
+U 59222 ; WX 943 ; N glyph213 ; G 214
+U 59223 ; WX 570 ; N glyph214 ; G 215
+U 59224 ; WX 950 ; N glyph111 ; G 112
+U 59225 ; WX 950 ; N glyph112 ; G 113
+U 59226 ; WX 950 ; N glyph113 ; G 114
+U 59227 ; WX 950 ; N glyph114 ; G 115
+U 59228 ; WX 610 ; N glyph115 ; G 116
+U 59229 ; WX 371 ; N glyph116 ; G 117
+U 59230 ; WX 370 ; N glyph117 ; G 118
+U 59231 ; WX 610 ; N glyph118 ; G 119
+U 59232 ; WX 496 ; N glyph119 ; G 120
+U 59233 ; WX 295 ; N glyph120 ; G 121
+U 59234 ; WX 295 ; N glyph121 ; G 122
+U 59235 ; WX 494 ; N glyph122 ; G 123
+U 59236 ; WX 896 ; N glyph123 ; G 124
+U 59237 ; WX 495 ; N glyph124 ; G 125
+U 59238 ; WX 495 ; N glyph125 ; G 126
+U 59239 ; WX 894 ; N glyph126 ; G 127
+U 59240 ; WX 1030 ; N glyph159 ; G 160
+U 59241 ; WX 1030 ; N glyph160 ; G 161
+U 59242 ; WX 1030 ; N glyph161 ; G 162
+U 59243 ; WX 1030 ; N glyph162 ; G 163
+U 59249 ; WX 970 ; N glyph170 ; G 171
+U 59254 ; WX 950 ; N glyph173 ; G 174
+U 59255 ; WX 1029 ; N glyph175 ; G 176
+U 59256 ; WX 931 ; N glyph176 ; G 177
+U 59272 ; WX 950 ; N glyph185 ; G 186
+U 59273 ; WX 591 ; N glyph186 ; G 187
+U 59275 ; WX 250 ; N glyph189 ; G 190
+U 59276 ; WX 600 ; N glyph190 ; G 191
+U 59277 ; WX 950 ; N glyph191 ; G 192
+U 59278 ; WX 1030 ; N glyph188 ; G 189
+U 59280 ; WX 670 ; N glyph216 ; G 217
+U 59281 ; WX 670 ; N glyph217 ; G 218
+U 59282 ; WX 970 ; N glyph218 ; G 219
+U 59283 ; WX 270 ; N glyph219 ; G 220
+U 59284 ; WX 670 ; N glyph220 ; G 221
+U 59290 ; WX 992 ; N glyph192 ; G 193
+U 59291 ; WX 951 ; N glyph183 ; G 184
+U 59297 ; WX 850 ; N glyph193 ; G 194
+U 59298 ; WX 1030 ; N glyph222 ; G 223
+U 59299 ; WX 991 ; N glyph223 ; G 224
+U 59301 ; WX 990 ; N glyph224 ; G 225
+U 59302 ; WX 990 ; N glyph225 ; G 226
+U 59303 ; WX 990 ; N glyph226 ; G 227
+U 59304 ; WX 990 ; N glyph227 ; G 228
+U 59305 ; WX 990 ; N glyph228 ; G 229
+U 59306 ; WX 990 ; N glyph229 ; G 230
+U 59307 ; WX 990 ; N glyph230 ; G 231
+U 59308 ; WX 990 ; N glyph231 ; G 232
+U 59309 ; WX 990 ; N glyph232 ; G 233
+U 59310 ; WX 990 ; N glyph233 ; G 234
+U 59311 ; WX 990 ; N glyph234 ; G 235
+U 62208 ; WX 950 ; N glyph235 ; G 236
+U 62209 ; WX 990 ; N glyph236 ; G 237
+U 62211 ; WX 930 ; N glyph237 ; G 238
+U 62212 ; WX 990 ; N glyph238 ; G 239
+U 62214 ; WX 931 ; N glyph239 ; G 240
+U 62215 ; WX 990 ; N glyph240 ; G 241
+U 62217 ; WX 950 ; N glyph241 ; G 242
+U 62218 ; WX 990 ; N glyph242 ; G 243
+U 62220 ; WX 530 ; N glyph243 ; G 244
+U 62221 ; WX 990 ; N glyph244 ; G 245
+U 62222 ; WX 890 ; N glyph245 ; G 246
+U 62223 ; WX 926 ; N glyph246 ; G 247
+U 62224 ; WX 990 ; N glyph247 ; G 248
+U 62226 ; WX 808 ; N glyph248 ; G 249
+U 62227 ; WX 990 ; N glyph249 ; G 250
+U 62229 ; WX 590 ; N glyph250 ; G 251
+U 62230 ; WX 990 ; N glyph251 ; G 252
+U 62232 ; WX 930 ; N glyph252 ; G 253
+U 62233 ; WX 990 ; N glyph253 ; G 254
+U 62235 ; WX 950 ; N glyph254 ; G 255
+U 62236 ; WX 990 ; N glyph255 ; G 256
+U 62238 ; WX 1030 ; N glyph256 ; G 257
+U 62239 ; WX 990 ; N glyph257 ; G 258
+U 62241 ; WX 1030 ; N glyph258 ; G 259
+U 62242 ; WX 990 ; N glyph259 ; G 260
+U 62244 ; WX 951 ; N glyph260 ; G 261
+U 62245 ; WX 990 ; N glyph261 ; G 262
+U 62247 ; WX 910 ; N glyph262 ; G 263
+U 62248 ; WX 990 ; N glyph263 ; G 264
+U 62250 ; WX 952 ; N glyph264 ; G 265
+U 62253 ; WX 890 ; N glyph265 ; G 266
+U 62256 ; WX 990 ; N glyph266 ; G 267
+U 62259 ; WX 796 ; N glyph267 ; G 268
+U 62262 ; WX 830 ; N glyph268 ; G 269
+U 62265 ; WX 950 ; N glyph269 ; G 270
+U 62266 ; WX 990 ; N glyph270 ; G 271
+U 62268 ; WX 950 ; N glyph271 ; G 272
+U 62271 ; WX 1026 ; N glyph272 ; G 273
+U 62274 ; WX 889 ; N glyph273 ; G 274
+U 62277 ; WX 950 ; N glyph274 ; G 275
+U 62280 ; WX 1030 ; N glyph275 ; G 276
+U 62283 ; WX 1028 ; N glyph276 ; G 277
+U 62286 ; WX 1030 ; N glyph277 ; G 278
+U 62289 ; WX 950 ; N glyph278 ; G 279
+U 62292 ; WX 990 ; N glyph279 ; G 280
+U 62295 ; WX 970 ; N glyph280 ; G 281
+U 62976 ; WX 930 ; N glyph282 ; G 283
+U 62977 ; WX 930 ; N glyph281 ; G 282
+U 62979 ; WX 756 ; N glyph283 ; G 284
+EndCharMetrics
+EndFontMetrics
