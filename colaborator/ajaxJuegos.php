@@ -1,4 +1,12 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $id = $_GET[ 'idFase' ];
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
@@ -13,12 +21,6 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 
 ?>
-Ida y Vuelta: <input type="checkbox" name="checkIdaVuelta" disabled /><br>
-<button type="button" class="btn btn-primary" onClick="javascript:genGames(<?php echo $id;?>);" disabled>Generar/Actualizar Juegos</button>
-<?php //} ?>
-<!--<button class="btn btn-success" type="button"  onClick="javascript:fnAddJuego(<?php echo $idComp;?>);">Agregar Juego</button> -->
-<!--<button class="btn btn-danger" type="button" onClick="javascript:delJuegos(<?php echo $id;?>);">Borrar Juegos</button> -->
-<div class="table-responsive">
 <table class="table table-striped table-bordered table-hover dataTables-juegos" >
 <thead>
 	<tr>
@@ -32,7 +34,7 @@ Ida y Vuelta: <input type="checkbox" name="checkIdaVuelta" disabled /><br>
 		<th>HORA FIN</th>
 		<th>ESCENARIO</th>
 		<th>FECHA</th>
-		<!--th></th-->
+		<th></th>
 	</tr>
 </thead>
 <tbody>
@@ -73,7 +75,8 @@ while($row = mysqli_fetch_array($resultGrupos)){?>
 				<?php echo $rowJuego['nombre2']; ?>
 			</td>		
 			<td>
-				<?php echo $rowJuego['hora_inicio']; ?>				  
+				<?php 
+					echo $rowJuego['aplazado']==1?'APLAZADO':$rowJuego['hora_inicio']; ?>				  
 			</td>
 			<td>
 				<?php echo $rowJuego['hora_fin']; ?>
@@ -84,13 +87,25 @@ while($row = mysqli_fetch_array($resultGrupos)){?>
 			<td>
 				<?php echo $date_a; ?>
 			</td>
-			<!-- td>
+			<!--td>
 				<button class="btn btn-success btn-outline" type="button" onClick="javascript:fnProgramar(<?php echo $rowJuego['id']; ?>,'<?php echo $rowJuego['nombre1']; ?>','<?php echo $rowJuego['nombre2']; ?>');">Programar</button>
 				<button class="btn btn-warning btn-outline" type="button" onClick="javascript:fnClearProg(<?php echo $rowJuego['id']; ?>);">Limpiar</button>
-				<!--<a title="Borrar" href="javaScript:delGame('<?php echo $rowJuego['id']; ?>');">
+				<a title="Borrar" href="javaScript:delGame('<?php echo $rowJuego['id']; ?>');">
 					<i class="icon-cancel icon-larger red-color"></i>
-				</a> -->
-			</td -->			
+				</a>
+			</td -->
+			<td>
+				<div class="btn-group">
+					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Acciones <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu">
+						<li><a href="javascript:fnProgramar(<?php echo $rowJuego['id']; ?>,'<?php echo $rowJuego['nombre1']; ?>','<?php echo $rowJuego['nombre2']; ?>');">Programar</a></li>
+						<li><a href="javascript:fnAplazar(<?php echo $rowJuego['id']; ?>);">Aplazar</a></li>  
+						<li><a href="javascript:fnClearProg(<?php echo $rowJuego['id']; ?>);">Limpiar Progrmación</a></li>					
+					  </ul>
+				</div>
+			</td>		
 		</tr>
 <?php $iter++; } } ?>
 </tbody>
@@ -103,7 +118,10 @@ $('.dataTables-juegos').DataTable({
 	"bSort" : false,
 	"bLengthChange": false,
 	"bInfo": false,
-	"pageLength": 20
+	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 }
 });
 });
 </script>

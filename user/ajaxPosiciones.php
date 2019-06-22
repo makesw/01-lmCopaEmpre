@@ -102,7 +102,8 @@ function calaculateTableGroup($idGrupo,$idFase,$idComp){
 	
 	//3. Realizar proceso de verificación para desempates:
 	for($i=0; $i<count($arrayData); $i++){
-		$matrizEmpateTemp = array();	
+		$matrizEmpateTemp = array();
+		$idsEquposEmpateTemp = array();
 		for($j=$i+1; $j<count($arrayData); $j++){		
 			if( $arrayData[$i]['PTS'] == $arrayData[$j]['PTS'] ){ //equipos empatados en i puntos
 				array_push($matrizEmpateTemp, $arrayData[$j]);

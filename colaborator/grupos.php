@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -85,11 +89,8 @@ $resultGrupos = $connect->query( "select g.*,f.id idFase, f.nombre nombreFase, c
 			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado Grupos</h3>						
-					</div>
 					<div class="panel-body">
-					<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-grupo">Crear</button>-->
+					<!-- button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-grupo">Crear</button -->
 								<div class="table-responsive">
 									<table class="table table-bordered table-hover dataTables-comp" >
 										<thead>
@@ -97,8 +98,8 @@ $resultGrupos = $connect->query( "select g.*,f.id idFase, f.nombre nombreFase, c
 												<th>Nombre</th>
 												<th>Clasifican</th>
 												<th>Fase</th>
-												<th>Competición</th>
-												<!--th></th-->
+												<th>Competición</th>												
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
@@ -117,14 +118,14 @@ $resultGrupos = $connect->query( "select g.*,f.id idFase, f.nombre nombreFase, c
 												<td>
 													<?php echo $row['nombreCompeticion']; ?>
 												</td>	
-												<!-- td>
-												<a href="javaScript:editGrupo(<?php echo $row['id']; ?>, <?php echo $row['idFase']; ?>)">
+												<td>
+												<!-- a href="javaScript:editGrupo(<?php echo $row['id']; ?>, <?php echo $row['idFase']; ?>)">
 												<i class="fa fa-edit"></i>
-												</a>
-												<a title="Borrar" href="javaScript:delGrupo('<?php echo $row['id']; ?>');">
+												</a -->
+												<!-- a title="Borrar" href="javaScript:delGrupo('<?php echo $row['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>											
-												</td -->
+												</a -->												
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>
@@ -178,7 +179,7 @@ $resultGrupos = $connect->query( "select g.*,f.id idFase, f.nombre nombreFase, c
 					<div class="form-group"> 
 						<label class="col-sm-2 control-label" for="nombre">Nombre</label> 
 						<div class="col-sm-10"> 
-							<input type="text" placeholder="Nombre" id="nombre" name="nombre" class="form-control">
+							<input type="text" onblur="javascript:aMayusculas(this.value,this.id);" placeholder="Nombre" id="nombre" name="nombre" class="form-control">
 						 </div> 
 					</div>
 					<div class="form-group"> 
@@ -224,10 +225,11 @@ $resultGrupos = $connect->query( "select g.*,f.id idFase, f.nombre nombreFase, c
 <script>
 $(document).ready(function () {
 $('.dataTables-comp').DataTable({	
+	"searching": true,
+	"bSort" : true,
 	"bLengthChange": false,
 	"bInfo": false,
-	"bSort" : false,
-	"pageLength": 10
+	"pageLength": 20
 });
 });
 	
@@ -305,5 +307,9 @@ $(document).ready(function(){
         });
    })
 });
+function aMayusculas(obj,id){
+    obj = obj.toUpperCase();
+    document.getElementById(id).value = obj;
+}
 </script>
 <?php $connect->close(); ?>

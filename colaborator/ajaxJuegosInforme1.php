@@ -1,4 +1,12 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $id = $_GET[ 'idFase' ];
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
@@ -64,9 +72,15 @@ while($row = mysqli_fetch_array($resultGrupos)){?>
 				<?php echo $date_a; ?>
 			</td>
 			<td>
-				<a href="informe_2.php?idJuego=<?php echo $rowJuego['id']; ?>&idFase=<?php echo $id; ?>&idComp=<?php echo $idComp; ?>">
-					<button class="btn btn-success btn-outline" type="button">Seleccionar</button>
-				</a>
+				<div class="btn-group">
+					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Acciones <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu">
+						<li><a href="informe_2.php?idJuego=<?php echo $rowJuego['id']; ?>&idFase=<?php echo $id; ?>&idComp=<?php echo $idComp; ?>">Imformar</a></li>
+						<li><a href="genPlanilla.php?idJuego=<?php echo $rowJuego['id']; ?>&idFase=<?php echo $id; ?>&idComp=<?php echo $idComp; ?>">Generar Planilla</a></li>						
+					  </ul>
+				</div>				
 			</td>			
 		</tr>
 <?php $iter++; } } ?>
@@ -80,7 +94,10 @@ $('.dataTables-juegos').DataTable({
 	"bSort" : false,
 	"bLengthChange": false,
 	"bInfo": false,
-	"pageLength": 20
+	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 }
 });
 });
 </script>

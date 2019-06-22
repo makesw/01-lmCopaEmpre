@@ -1,4 +1,12 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $iidFase = $_GET[ 'idFase' ];
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
@@ -11,10 +19,9 @@ date_default_timezone_set('America/Bogota');
 <table class="table table-striped table-bordered table-hover dataTables-resultados" >
 <thead>
 	<tr>
-		<th>Grupo</th>
+		<!--th>Grupo</th-->
 		<th>Local</th>
 		<th>Goles</th>
-		<th></th>
 		<th>Visitante</th>
 		<th>Goles</th>
 		<th>Fecha</th>
@@ -33,17 +40,14 @@ while($row = mysqli_fetch_array($resultResultados)){
 	$goles2 = mysqli_fetch_array( $connect->query("select sum(g.valor) totalGoles from gol g JOIN jugador ju ON g.id_jugador = ju.id AND g.id_juego=".$row['id']." JOIN equipo e ON ju.id_equipo = e.id AND e.id =".$row['id_equipo_2']));
 ?>	
 <tr>	
-	<td>
-		<strong><?php if($grupoNameAux != $row['nombreGrupo']){ echo $row['nombreGrupo']; $grupoNameAux = $row['nombreGrupo']; }?></strong>
-	</td>			
+	<!--td>
+		<strong><?php //if($grupoNameAux != $row['nombreGrupo']){ echo $row['nombreGrupo']; $grupoNameAux = $row['nombreGrupo']; }?></strong>
+	</td -->			
 	<td>
 		<?php echo $row['nombre1']; ?>
 	</td>	
 	<td>
 		<?php echo !empty($goles1['totalGoles'])?$goles1['totalGoles']:0; ?>
-	</td>		
-	<td>
-		-
 	</td>
 	<td>
 		<?php echo $row['nombre2']; ?>
@@ -67,6 +71,9 @@ $('.dataTables-resultados').DataTable({
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 },
 	dom: '<"html5buttons" B>lTfgitp',
 		buttons: [				
 			{

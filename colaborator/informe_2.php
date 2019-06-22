@@ -1,34 +1,41 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $idJuego = 0;
+$idComp = 0;
 $idFase = 0;
 $btnGoles = 0;
 if ( isset( $_GET[ 'idJuego' ] ) ) {
-	$idJuego = $_GET[ 'idJuego' ];
+    $idJuego = $_GET[ 'idJuego' ];
+}
+if ( isset( $_GET[ 'idComp' ] ) ) {
+    $idComp = $_GET[ 'idComp' ];
 }
 if ( isset( $_GET[ 'idFase' ] ) ) {
-	$idFase = $_GET[ 'idFase' ];
+    $idFase = $_GET[ 'idFase' ];
 }
 if ( isset( $_GET[ 'btnGoles' ] ) ) {
-	$btnGoles = $_GET[ 'btnGoles' ];
+    $btnGoles = $_GET[ 'btnGoles' ];
 }
 
 $juego = mysqli_fetch_array( $connect->query( "select j.*, e.nombre nombreEscena, s.nombre sede from juego j JOIN escenario e ON j.id_escenario = e.id AND j.id =" . $idJuego . " AND j.fecha is not null JOIN sede s ON e.id_sede = s.id" ) );
-$resultJugadores1 = $connect->query( "select ju.*, a.id_jugador asistencia  from juego j JOIN equipo e ON j.id_equipo_1 = e.id AND j.fecha is not null AND j.id = " . $idJuego . " JOIN jugador ju ON e.id = ju.id_equipo LEFT JOIN asistencia a ON a.id_juego = j.id AND a.id_jugador = ju.id ORDER BY nombres ASC" );
-$resultJugadores2 = $connect->query( "select ju.*, a.id_jugador asistencia  from juego j JOIN equipo e ON j.id_equipo_2 = e.id AND j.fecha is not null AND j.id = " . $idJuego . " JOIN jugador ju ON e.id = ju.id_equipo LEFT JOIN asistencia a ON a.id_juego = j.id AND a.id_jugador = ju.id ORDER BY nombres ASC" );
+$resultJugadores1 = $connect->query( "select ju.*, a.id_jugador asistencia  from juego j JOIN equipo e ON j.id_equipo_1 = e.id AND j.fecha is not null AND j.id = " . $idJuego . " JOIN jugador ju ON e.id = ju.id_equipo and ju.activo is NULL LEFT JOIN asistencia a ON a.id_juego = j.id AND a.id_jugador = ju.id ORDER BY nombres ASC" );
+$resultJugadores2 = $connect->query( "select ju.*, a.id_jugador asistencia  from juego j JOIN equipo e ON j.id_equipo_2 = e.id AND j.fecha is not null AND j.id = " . $idJuego . " JOIN jugador ju ON e.id = ju.id_equipo and ju.activo is NULL LEFT JOIN asistencia a ON a.id_juego = j.id AND a.id_jugador = ju.id ORDER BY nombres ASC" );
 $resultGoles1 = $connect->query( "select concat(j.nombres,' ',j.apellidos) nombres, g.* from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_1 = j.id_equipo ORDER BY g.minuto desc,g.id desc");
 $resultGoles2 = $connect->query( "select concat(j.nombres,' ',j.apellidos) nombres, g.* from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_2 = j.id_equipo ORDER BY g.minuto desc, g.id desc");
 $resultSanciones1 = $connect->query( "select concat(j.nombres,' ',j.apellidos) nombres, ts.*, s.minuto, s.id id_san from sancion s JOIN jugador j ON s.id_jugador = j.id AND s.id_juego =".$idJuego." JOIN juego jueg ON s.id_juego = jueg.id AND jueg.id_equipo_1 = j.id_equipo JOIN tipo_sancion ts ON s.id_tipo_sancion = ts.id ORDER BY s.minuto, s.id desc");
 $resultSanciones2 = $connect->query( "select concat(j.nombres,' ',j.apellidos) nombres, ts.*, s.minuto, s.id id_san from sancion s JOIN jugador j ON s.id_jugador = j.id AND s.id_juego =".$idJuego." JOIN juego jueg ON s.id_juego = jueg.id AND jueg.id_equipo_2 = j.id_equipo JOIN tipo_sancion ts ON s.id_tipo_sancion = ts.id ORDER BY s.minuto, s.id desc");
 
-$goles1 = mysqli_fetch_array( $connect->query( "select SUM(g.valor) as totalGoles from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_1 = j.id_equipo")); 
+$goles1 = mysqli_fetch_array( $connect->query( "select SUM(g.valor) as totalGoles from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_1 = j.id_equipo"));
 
-$goles2 = mysqli_fetch_array( $connect->query( "select SUM(g.valor) as totalGoles from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_2 = j.id_equipo") ); 
-
+$goles2 = mysqli_fetch_array( $connect->query( "select SUM(g.valor) as totalGoles from gol g JOIN jugador j ON g.id_jugador = j.id AND g.id_juego =".$idJuego." JOIN juego jueg ON g.id_juego = jueg.id AND jueg.id_equipo_2 = j.id_equipo") );
 
 $resultTSanciones = $connect->query( "select * from tipo_sancion order by nombre asc");
 
@@ -118,7 +125,7 @@ $fecha = $date->format( 'Y-m-d' );
 
 			<!-- Main content -->
 			<div class="main-content">
-				<h1 class="page-title">LIGA / Informe de Juego</h1>
+				<h1 class="page-title">LIGA / <a href="informe_1.php?idComp=<?php echo $idComp; ?>&idFase=<?php echo $idFase; ?>">Informe de Juego</a> / Informar</h1>
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="panel panel-default">
@@ -131,19 +138,19 @@ $fecha = $date->format( 'Y-m-d' );
 								<div class="col-lg-12">
 									<div class="form-inline">
 										<div class="form-group">
-											<input type="text" size="25%" class="form-control" value="Hora: <?php echo($juego['hora_inicio']); ?>" readonly>
+											 | <strong>Hora:</strong> <?php echo($juego['hora_inicio']); ?>
 										</div>
 										<div class="form-group">
-											<input type="text" size="25%" class="form-control" value="Fecha: <?php echo($fecha); ?>" readonly>
+											 | <strong>Fecha:</strong> <?php echo($fecha); ?>
 										</div>
 										<div class="form-group">
-											<input type="text" size="25%" class="form-control" value="Jornada: <?php echo($juego['jornada']); ?>" readonly>
+											 | <strong>Jornada:</strong> <?php echo($juego['jornada']); ?>
 										</div>
 										<div class="form-group">
-											<input type="text" size="25%" class="form-control" value="Lugar: <?php echo($juego['sede']); ?>" readonly>
+											 | <strong>Lugar:</strong> <?php echo($juego['sede']); ?>
 										</div>
 										<div class="form-group">
-											<input type="text" size="30%" class="form-control" value="Escenario: <?php echo($juego['nombreEscena']); ?>" readonly>
+											 | <strong>Escenario:</strong> <?php echo($juego['nombreEscena']); ?> |
 										</div>
 									</div>
 								</div>
@@ -164,6 +171,7 @@ $fecha = $date->format( 'Y-m-d' );
 											<button class="btn btn-blue btn-outline" type="button" onClick="javascript:fnAddAsis();">Registrar Asistencia</button>
 										</div>
 										<button class="btn btn-danger btn-outline" type="button" onClick="javascript:fnDelAsis();">Borrar Asistencia</button>
+										<button class="btn btn-danger btn-outline" type="button" onClick="javascript:fnClearIforme();">Limpiar Informe</button>
 									</div>
 								</div>								
 								<div class="col-lg-6">
@@ -185,18 +193,32 @@ $fecha = $date->format( 'Y-m-d' );
 													//consultar jugador vetado:
 													$jugador_vetado = mysqli_fetch_array( $connect->query( "select count(1) total from jugador_vetado where documento_jugador = ".$row1['documento'] ));
 													if( $jugador_vetado['total']<1){
-														//consultar jugador vetado:
-														$jugador_vetado = mysqli_fetch_array( $connect->query( "select count(1) total from jugador_vetado where documento_jugador = ".$row1['documento'] ));
-														//validar jugador sancion:
-														$sancion = mysqli_fetch_array( $connect->query( "select s.*, ts.veta_jugador,ts.fechas_suspencion from sancion s join tipo_sancion ts ON s.id_jugador = ".$row1['id']." and s.id_tipo_sancion = ts.id join juego j on s.id_juego join fase f on j.id_fase = f.id and f.id = ".$juego['id_fase']." and f.activa =1 join competicion c on f.id_competicion = c.id and c.activa = 1 order by s.fecha desc limit 1") );	
-														if( $sancion['fechas_suspencion']>0 ){
-															$juegos = mysqli_fetch_array( $connect->query( "select count(1) total from juego j join fase f on j.id_fase = f.id and f.id = ".$juego['id_fase']." and f.activa = 1 and (j.id_equipo_1 = ".$row1['id_equipo']." OR j.id_equipo_2 = ".$row1['id_equipo'].") and fecha BETWEEN '".$sancion['fecha']."' AND now() and j.informado = 1 join competicion c on f.id_competicion = c.id and c.activa =1") );
-															if($sancion['fechas_suspencion']>$juegos['total']){
+														//validar jugador sancionado:
+														//consultar la última sancion del jugador en la competicion:
+														$sancion = mysqli_fetch_array( $connect->query( "select s.*, ts.veta_jugador,ts.fechas_suspencion, j.fecha fechJuego from sancion s join tipo_sancion ts ON s.id_jugador = ".$row1['id']." and s.id_tipo_sancion = ts.id join juego j on s.id_juego = j.id join fase f on j.id_fase = f.id and f.activa =1 join competicion c on f.id_competicion = c.id and c.id = ".$idComp." order by s.fecha desc limit 1") );	
+														if($sancion!= null && $sancion['fechas_suspencion']>0 ){
+															//si aplica fechas de suspenció se valida si el jugador puede jugar este juego:
+															//juegos del equipo después de la fecha de sancion:
+															$resultJuegosTeam =  $connect->query( "select distinct j.id, j.fecha from juego j join fase f on j.fecha is not null and j.id_fase = f.id and f.id_competicion = ".$idComp." and (j.id_equipo_1 = ".$juego['id_equipo_1']." or j.id_equipo_2 = ".$juego['id_equipo_1'].") order by j.fecha asc");
+															$contador = $sancion['fechas_suspencion']+1;
+															$fechaHabil = null;
+															//echo "contador-->".$contador;
+															//echo "idJugador-->".$row1['id'];
+															while ( $rowGame = mysqli_fetch_array( $resultJuegosTeam ) ) {
+																if( $rowGame['fecha'] > $sancion['fechJuego']){
+																	$contador --;
+																}
+																if( $contador == 0 ){
+																	$fechaHabil = $rowGame['fecha'];
+																	//echo "fechaHabil-->".$fechaHabil;
+																	break;
+																}
+															}
+															if(($juego['fecha'] < $fechaHabil) || $contador > 0 ){
 																$jugador_sancionado = true;
 															}
 														}
 													}
-													
 												?>
 												<tr <?php if($jugador_vetado['total'] > 0){echo 'style="background-color: #ffb1be;"';}elseif($jugador_sancionado){echo 'style="background-color: #c7eaf9;"';} ?>>
 													<td>
@@ -241,19 +263,32 @@ $fecha = $date->format( 'Y-m-d' );
 												//consultar jugador vetado:
 												$jugador_vetado = mysqli_fetch_array( $connect->query( "select count(1) total from jugador_vetado where documento_jugador = ".$row2['documento'] ));
 												if( $jugador_vetado['total']<1){
-													//consultar jugador vetado:
-													$jugador_vetado = mysqli_fetch_array( $connect->query( "select count(1) total from jugador_vetado where documento_jugador = ".$row2['documento'] ));
-													//validar jugador sancion:
-													$sancion = mysqli_fetch_array( $connect->query( "select s.*, ts.veta_jugador,ts.fechas_suspencion from sancion s join tipo_sancion ts ON s.id_jugador = ".$row2['id']." and s.id_tipo_sancion = ts.id join juego j on s.id_juego join fase f on j.id_fase = f.id and f.id = ".$juego['id_fase']." and f.activa =1 join competicion c on f.id_competicion = c.id and c.activa = 1 order by s.fecha desc limit 1") );	
-													if( $sancion['fechas_suspencion']>0 ){
-														$juegos = mysqli_fetch_array( $connect->query( "select count(1) total from juego j join fase f on j.id_fase = f.id and f.id = ".$juego['id_fase']." and f.activa = 1 and (j.id_equipo_1 = ".$row2['id_equipo']." OR j.id_equipo_2 = ".$row2['id_equipo'].") and fecha BETWEEN '".$sancion['fecha']."' AND now() and j.informado = 1 join competicion c on f.id_competicion = c.id and c.activa =1") );
-														if($sancion['fechas_suspencion']>$juegos['total']){
-															$jugador_sancionado = true;
+														//validar jugador sancionado:
+														//consultar la última sancion del jugador en la competicion:
+														$sancion = mysqli_fetch_array( $connect->query( "select s.*, ts.veta_jugador,ts.fechas_suspencion, j.fecha fechJuego from sancion s join tipo_sancion ts ON s.id_jugador = ".$row2['id']." and s.id_tipo_sancion = ts.id join juego j on s.id_juego = j.id join fase f on j.id_fase = f.id and f.activa =1 join competicion c on f.id_competicion = c.id and c.id = ".$idComp." order by s.fecha desc limit 1") );	
+														if($sancion!= null && $sancion['fechas_suspencion']>0 ){
+															//si aplica fechas de suspenció se valida si el jugador puede jugar este juego:
+															//juegos del equipo después de la fecha de sancion:
+															$resultJuegosTeam =  $connect->query( "select distinct j.id, j.fecha from juego j join fase f on j.fecha is not null and j.id_fase = f.id and f.id_competicion = ".$idComp." and (j.id_equipo_1 = ".$juego['id_equipo_2']." or j.id_equipo_2 = ".$juego['id_equipo_2'].") order by j.fecha asc");
+															$contador = $sancion['fechas_suspencion']+1;
+															$fechaHabil = null;
+															//echo "contador-->".$contador;
+															//echo "idJugador-->".$row2['id'];
+															while ( $rowGame = mysqli_fetch_array( $resultJuegosTeam ) ) {
+																if( $rowGame['fecha'] > $sancion['fechJuego']){
+																	$contador --;
+																}
+																if( $contador == 0 ){
+																	$fechaHabil = $rowGame['fecha'];
+																	//echo "fechaHabil-->".$fechaHabil;
+																	break;
+																}
+															}
+															if(($juego['fecha'] < $fechaHabil) || $contador > 0 ){
+																$jugador_sancionado = true;
+															}
 														}
-													}
-													
-												}
-												
+													}											
 												?>
 												<tr <?php if($jugador_vetado['total'] > 0){echo 'style="background-color: #ffb1be;"';}elseif($jugador_sancionado){echo 'style="background-color: #c7eaf9;"';} ?>>
 													<td>
@@ -279,6 +314,7 @@ $fecha = $date->format( 'Y-m-d' );
 										</table>
 									</div>
 								</div>
+								<form id="formInforme" method="post">
 								<div class="col-lg-12">
 									<div class="panel minimal panel-default">
 										<div class="panel-heading clearfix">
@@ -292,8 +328,7 @@ $fecha = $date->format( 'Y-m-d' );
 												</div>
 												<div class="col-xs-6 text-center stack-order">
 													<h1 class="no-margins"><strong><?php echo($goles2['totalGoles']); ?></strong></h1>
-												</div>
-												
+												</div>												
 											</div>
 											<div class="row col-with-divider">
 												<div class="col-xs-6 text-center stack-order">
@@ -339,16 +374,17 @@ $fecha = $date->format( 'Y-m-d' );
 													</div>
 												</div>
 											</div>
+											<div class="row col-with-divider">
+												<div class="col-xs-6 text-center stack-order">
+													<div class="radio"> <label> <input type="radio" value="<?php echo $juego['id_equipo_1']; ?>" id="rGanaPenales1" name="rGanaPenales" <?php if($juego['id_ganador_penales']==$juego['id_equipo_1']){echo "checked";}?>>Ganador en Penales</label> </div>
+												</div>
+												<div class="col-xs-6 text-center stack-order">
+													<div class="radio"> <label> <input type="radio" value="<?php echo $juego['id_equipo_2']; ?>" id="rGanaPenales2" name="rGanaPenales" <?php if($juego['id_ganador_penales']==$juego['id_equipo_2']){echo "checked";}?>>Ganador en Penales</label> </div>
+												</div>												
+											</div>
 										</div>
 									</div>
-								</div>
-								<!--<div class="col-lg-12">
-									<div class="form-group">										
-										<div id="btnInfGoles" hidden="true">
-										<button type="button" class="btn btn-primary" onClick="javascript:fnUpdateGoles();">Informar Goles</button>
-										</div>
-									</div>
-								</div> -->								
+								</div>							
 								<div class="col-lg-12">
 									<div class="panel minimal panel-default">
 										<div class="panel-heading clearfix">
@@ -403,7 +439,7 @@ $fecha = $date->format( 'Y-m-d' );
 										</div>
 									</div>
 								</div>
-								<form id="formInforme" method="post">
+								
 								<div class="col-lg-12"><br/>
 									<div class="form-group">
 										<label for="emailaddress">Informe</label>
@@ -570,7 +606,7 @@ function delGol( id ) {
 			data: new FormData( this ),
 			success: function ( data ) {
 				//console.log( data );
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>'+'&btnGoles=1';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>'+'&btnGoles=1';
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -590,7 +626,7 @@ jQuery( document ).on( 'submit', '#formAddGol', function ( event ) {
 			success: function (data) {
 				console.log(data);
 				arrSelectedPlayers=[];
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>'+'&btnGoles=1';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>'+'&btnGoles=1';
 			},
 			error: function (data) {
 				console.log(data);
@@ -605,9 +641,9 @@ jQuery( document ).on( 'submit', '#formAddSan', function ( event ) {
 			data:{ array : JSON.stringify(arrSelectedPlayers) },
 			dataType: "json",
 			success: function (data) {
-				console.log(data);
+				//console.log(data);
 				arrSelectedPlayers=[];
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
 			},
 			error: function (data) {
 				console.log(data);
@@ -630,7 +666,7 @@ function delSan( id ) {
 			data: new FormData( this ),
 			success: function ( data ) {
 				//console.log( data );
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -653,7 +689,7 @@ function fnAddAsis() {
 			success: function (data) {
 				//console.log(data);
 				arrSelectedPlayers=[];
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
 			},
 			error: function (data) {
 				console.log(data);
@@ -669,7 +705,7 @@ jQuery( document ).on( 'submit', '#formInforme', function ( event ) {
 		data: new FormData( this ),
 		success: function ( data ) {
 			//console.log( data );
-			location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+			location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
 		},
 		error: function ( data ) {
 			console.log( data );
@@ -692,12 +728,32 @@ function fnDelAsis() {
 			success: function (data) {
 				//console.log(data);
 				arrSelectedPlayers=[];
-				location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
 			},
 			error: function (data) {
 				console.log(data);
 			},
 		});		
+		return false;
+	}
+}
+function fnClearIforme() {
+	if ( confirm( 'Confirma Limpiar Informe?' ) ) {
+		$.ajax( {
+			url: 'server.php?action=clearInforme&idJuego=<?php echo($idJuego); ?>'+'&idFase=<?php echo($idFase);?>',
+			type: 'POST',
+			data: new FormData( this ),
+			success: function ( data ) {
+				//console.log( data );
+				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
+			},
+			error: function ( data ) {
+				console.log( data );
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		} );
 		return false;
 	}
 }

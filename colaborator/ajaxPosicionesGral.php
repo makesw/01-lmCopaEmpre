@@ -1,7 +1,17 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
-$resultTableGral = $connect->query( "select eg.id_equipo, e.nombre, sum(eg.JUG) JUG, sum(eg.GAN) GAN, sum(eg.EMP) EMP, sum(eg.PER) PER, sum(eg.GAF) GAF, sum(eg.GEC) GEC, sum(eg.DIF) DIF, sum(eg.PTS) PTS from equipo_grupo eg join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id_competicion=".$idComp." join equipo e on eg.id_equipo = e.id group by id_equipo order by PTS desc, DIF desc" );
+$resultTableGral = $connect->query( "select eg.id_equipo, e.nombre, sum(eg.JUG) JUG, sum(eg.GAN) GAN, sum(eg.EMP) EMP, sum(eg.PER) PER, sum(eg.GAF) GAF, sum(eg.GEC) GEC, 
+sum(eg.DIF) DIF, sum(eg.PTS) PTS from equipo_grupo eg join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id join competicion c on f.id_competicion = c.id and( c.id = ".$idComp." or c.id_parent = ".$idComp.") 
+join equipo e on eg.id_equipo = e.id group by id_equipo order by PTS desc, DIF desc" );
 setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');
 ?>
@@ -47,6 +57,9 @@ $('.dataTables-tableGral').DataTable({
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 },
 	dom: '<"html5buttons" B>lTfgitp',
 		buttons: [				
 			{

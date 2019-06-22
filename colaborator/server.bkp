@@ -1,11 +1,7 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-    header( 'Location: ../index.html' );
-}else{
-    if($_SESSION[ 'dataSession' ]['perfil'] != 'admin'){
-        header( 'Location: ../salir.php' );
-    }
+	header( 'Location: /index.php' );
 }
 require '../conexion.php';
 $connect->query( "SET NAMES 'utf8'" );
@@ -114,7 +110,7 @@ if ( $action == 'addUpdComp' ) {
 	if(isset($_POST[ "inscripcion" ])){$inscription=1;}
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
 	if( $bthAction == 1 ){ //insert data
-	    $query = "INSERT INTO competicion (nombre,fecha_inicio,fecha_fin,puntos_ganador,puntos_perdedor,puntos_empate,activa,habilitar_inscripciones,fecha_creacion,id_parent, valor, nummxjug, fech_max_pla) VALUES ('" . $_POST[ "nombre" ] ."',null,null,'".$_POST["puntosg"]."','".$_POST["puntosp"]."','".$_POST["puntose"]."','".$active."','".$inscription."'"." ,NOW(),".$parent.",".$_POST[ "valor" ].",".$_POST[ "maxJug" ].",'".$_POST[ "fechaMax" ]."')";
+		$query = "INSERT INTO competicion (nombre,fecha_inicio,fecha_fin,puntos_ganador,puntos_perdedor,puntos_empate,activa,habilitar_inscripciones,fecha_creacion,id_parent, valor, nummxjug) VALUES ('" . $_POST[ "nombre" ] ."',null,null,'".$_POST["puntosg"]."','".$_POST["puntosp"]."','".$_POST["puntose"]."','".$active."','".$inscription."'"." ,NOW(),".$parent.",".$_POST[ "valor" ].",".$_POST[ "maxJug" ]." )";
 		$result = $connect->query( $query );		
 		if( $result == 1){		
 			echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
@@ -122,7 +118,7 @@ if ( $action == 'addUpdComp' ) {
 			echo json_encode(array('error'=>true,'description'=>'No se pudo Crear Registro'));
 		}
 	}else if( $bthAction == 2 ){ //update data		
-	    $query = "UPDATE competicion SET nombre='".$_POST["nombre"]."',puntos_ganador='".$_POST["puntosg"]."',puntos_perdedor='".$_POST["puntosp"]."',puntos_empate='".$_POST["puntose"]."',activa='".$active."',habilitar_inscripciones='".$inscription."',id_parent='".$parent."',valor=".$_POST["valor"].",nummxjug=".$_POST["maxJug"].",fech_max_pla='".$_POST[ "fechaMax" ]."' WHERE id = ".$_POST[ "bthValId" ];
+		$query = "UPDATE competicion SET nombre='".$_POST["nombre"]."',puntos_ganador='".$_POST["puntosg"]."',puntos_perdedor='".$_POST["puntosp"]."',puntos_empate='".$_POST["puntose"]."',activa='".$active."',habilitar_inscripciones='".$inscription."',id_parent='".$parent."',valor=".$_POST["valor"].",nummxjug=".$_POST["maxJug"]." WHERE id = ".$_POST[ "bthValId" ];
 		
 		$result = $connect->query( $query );
 		if( $result == 1){		
@@ -139,9 +135,9 @@ if ( $action == 'getDataComp' ) {
 }
 if ( $action == 'delComp' ) {	
 	$id = $_GET[ 'id' ];
-	$result = $connect->query( "delete from equipo_grupo where id_grupo in (select distinct g.id from fase f join grupo g on f.id = g.id_fase and f.id_competicion = ".$id.")" );	
-	$result = $connect->query( "delete from juego where id_fase in( select f.id from fase f where f.id_competicion =".$id.")" );	
-	$sql = "DELETE FROM competicion WHERE id=".$id;
+	$result = $connect->query( "delete from equipo_grupo where id_equipo in (select distinct x.id_equipo from (select eg.* from equipo_grupo eg join grupo g on eg.id_grupo = g.id join equipo e on eg.id_equipo = e.id and e.id_competicion =".$id.") AS x)" );
+	$result = $connect->query( "delete from juego where id_fase in( select f.id from fase f where f.id_competicion =".$id.")" );
+	$sql = "DELETE FROM competicion WHERE id=".$id;	
 	$result = $connect->query( $sql );
 	if( $result == 1){		
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
@@ -233,7 +229,6 @@ if ( $action == 'addUpdEqui' ) {
 	$bthAction = 0;
 	$idComp = 0;
 	$foto = '../images/fotosEquipos/default.png';
-	$fotoEscudo = '../images/fotosEscudo/default.png';
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
 	if(isset($_POST[ "cmbComp"])){$idComp=$_POST[ "cmbComp" ];}
 	if( $bthAction == 1 ){ //insert data
@@ -244,14 +239,6 @@ if ( $action == 'addUpdEqui' ) {
 			$targetPathFoto = "../images/fotosEquipos/".$_POST[ 'nombre' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 			$foto = $targetPathFoto;
-			
-			if( !empty ($_FILES['escudo']['name']) ){
-			   	//Upload escudo:
-    			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
-    			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
-    			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-    			$fotoEscudo = $targetPathFotoEsc;
-			}
 		}	
 		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."')";
 		$result = $connect->query( $query );
@@ -262,7 +249,6 @@ if ( $action == 'addUpdEqui' ) {
 		}
 	}else if( $bthAction == 2 ){ //update data
 		$foto;
-		$fotoEscudo;
 		if( !empty ($_FILES['foto']['name']) ){
 			//Upload foto:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
@@ -279,24 +265,8 @@ if ( $action == 'addUpdEqui' ) {
 				$query2 = "UPDATE equipo SET url_foto='".$foto."' WHERE id = ".$_POST[ "bthValId" ];
 				$result = $connect->query( $query2 );
 			}	
-			
-			//Upload foto:
-			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
-			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
-			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-			$fotoEscudo = $targetPathFotoEsc;
-			//Delete old foto from server:
-			$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-			if(!strpos($equipo['url_escudo'], 'default.png')){
-			    unlink($equipo[ 'url_escudo']);
-			}
-			//update foto:
-			if(!empty ($_FILES['escudo']['name'])){
-			    $query2 = "UPDATE equipo SET url_escudo='".$fotoEscudo."' WHERE id = ".$_POST[ "bthValId" ];
-			    $result = $connect->query( $query2 );
-			}	
 		}		
-		$query = "UPDATE equipo SET nombre='".$_POST["nombre"]."',color='".$_POST["color"]."',id_usuario='".$_POST[ "cmbUser" ]."',id_competicion=".$idComp." WHERE id = ".$_POST[ "bthValId" ];
+		$query = "UPDATE equipo SET nombre='".$_POST["nombre"]."',color='".$_POST["color"]."',id_usuario='".$_POST[ "cmbUser" ]."',id_competicion=".$idComp.",url_foto ='".$foto."' WHERE id = ".$_POST[ "bthValId" ];
 		$result = $connect->query( $query );
 		if( $result == 1){		
 			//update juego:
@@ -326,16 +296,12 @@ if ( $action == 'delEqui' ) {
 if ( $action == 'addUpdJug' ) {
 	$bthAction = 0;
 	$delegado = 0;
-	$activo=0;
 	$foto = '../images/fotosJugadores/default.png';	
 	if(isset($_POST[ "delegado" ])){$delegado=1;}
-	if(isset($_POST[ "activo" ])){$activo=1;}
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
-	$result = 0;
+	
 	//Validar jugador vetado:
 	$vetado = mysqli_fetch_array($connect->query( "select count(1) total from jugador_vetado WHERE documento_jugador='".$_POST[ 'documento' ]."'"));
-	//validar si el jugador ya existe:
-	$existeJugador = mysqli_fetch_array($connect->query( "select * from jugador WHERE documento='".$_POST[ 'documento' ]."'"));
 
 	if( $vetado['total'] < 1 ){	
 		if( $bthAction == 1 ){ //insert data
@@ -345,24 +311,18 @@ if ( $action == 'addUpdJug' ) {
 				$targetPathFoto = "../images/fotosJugadores/".$_POST[ 'documento' ].date("YmdHms").".png"; 
 				move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 				$foto = $targetPathFoto;
-			}
-			if( empty($existeJugador['id']) ){ //Si NO existe se crea nuevo
-    			$query = "INSERT INTO jugador (documento,nombres,apellidos,numero,telefono,correo,id_equipo,goles,es_delegado,activo,url_foto) VALUES ('" . $_POST[ "documento" ] ."','".$_POST["nombres"]."','".$_POST["apellidos"]."','".$_POST["numero"]."','".$_POST["telefono"]."','".$_POST["correo"]."','".$_POST["bthValEqui"]."','".'0'."','".$delegado."',NULL,'".$foto."'".")";
-    			$result = $connect->query( $query );    			
-			}else{ //Si existe se activa jugador con los nuevos datos
-			    $query = "UPDATE jugador SET documento='".$_POST[ 'documento' ]."',nombres='".$_POST["nombres"]."',apellidos='".$_POST["apellidos"]."',numero='".$_POST["numero"]."',telefono='".$_POST["telefono"]."',correo='".$_POST["correo"]."',es_delegado='".$delegado."', activo=NULL,id_equipo=".$_POST["bthValEqui"]." WHERE id = '".$existeJugador['id']."'";
-			    $result = $connect->query( $query );
-			}			
-			if( $result == 1){
-			    echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
+			}	
+			$query = "INSERT INTO jugador (documento,nombres,apellidos,numero,telefono,correo,id_equipo,goles,es_delegado,url_foto) VALUES ('" . $_POST[ "documento" ] ."','".$_POST["nombres"]."','".$_POST["apellidos"]."','".$_POST["numero"]."','".$_POST["telefono"]."','".$_POST["correo"]."','".$_POST["bthValEqui"]."','".'0'."','".$delegado."','".$foto."'".")";
+
+			$result = $connect->query( $query );
+			if( $result == 1){		
+				echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
 			}else{
-			    echo json_encode(array('error'=>true,'description'=>'No se pudo Crear Registro'));
+				echo json_encode(array('error'=>true,'description'=>'No se pudo Crear Registro'));
 			}
-			
 		}else if( $bthAction == 2 ){ //update data
 			$delegado = 0;
 			if(isset($_POST[ "delegado" ])){$delegado=1;}
-			if(isset($_POST[ "activo" ])){$activo=1;}
 			$foto;
 			if( !empty ($_FILES['foto']['name']) ){
 				//Upload foto:
@@ -372,8 +332,7 @@ if ( $action == 'addUpdJug' ) {
 				$foto = $targetPathFoto;
 				//Delete old foto from server:
 				$jugador = mysqli_fetch_array($connect->query( "select * from jugador WHERE id=".$_POST[ "bthValId" ] ));
-				if(!strpos($jugador['url_foto'], 'default.png') && file_exists ($jugador[ 'url_foto']) ){
-				    
+				if(!strpos($jugador['url_foto'], 'default.png')){
 					unlink($jugador[ 'url_foto']);
 				}
 			}	
@@ -538,15 +497,12 @@ if ( $action == 'programJuego' ) {
 	$fechaV = $_POST["fecha"];
 	$game = mysqli_fetch_array( $connect->query("select * from juego WHERE id =".$_POST[ "bthValId" ]) );
 	$user1 = mysqli_fetch_array( $connect->query("select u.* from juego j join equipo e on j.id_equipo_1 = e.id and j.id = ".$_POST[ "bthValId" ]." join usuario u on e.id_usuario = u.id") );
-	$user2 = mysqli_fetch_array( $connect->query("select u.* from juego j join equipo e on j.id_equipo_2 = e.id and j.id = ".$_POST[ "bthValId" ]." join usuario u on e.id_usuario = u.id") );		
+	$user2 = mysqli_fetch_array( $connect->query("select u.* from juego j join equipo e on j.id_equipo_2 = e.id and j.id = ".$_POST[ "bthValId" ]." join usuario u on e.id_usuario = u.id") );	
 	$resultGames = null;
-	$idCompeticion;
 	if( $game['tipo'] == 'OFICIAL' ){
 		$resultGames = $connect->query("SELECT *,DATE_FORMAT(fecha,'%Y-%m-%d') fechaF FROM juego WHERE (id_equipo_1=".$game[ "id_equipo_1" ]." OR id_equipo_2=".$game["id_equipo_1"]." OR id_equipo_1=".$game[ "id_equipo_2" ]." OR id_equipo_2=".$game[ "id_equipo_2" ].") and DATE_FORMAT(fecha,'%d-%m-%Y') = DATE_FORMAT('".$_POST["fecha"]."','%d-%m-%Y')");	
-		$idCompeticion =  mysqli_fetch_array($connect->query("select e.id_competicion idComp from juego j join equipo e on j.id=".$game['id']." and j.id_equipo_1 = e.id limit 1"));
 	}else{		
 		$resultGames = $connect->query("SELECT *,DATE_FORMAT(fecha,'%Y-%m-%d') fechaF FROM juego WHERE (nombre1='".$game[ "nombre1" ]."' OR nombre2='".$game[ "nombre2" ]."') and DATE_FORMAT(fecha,'%d-%m-%Y') = DATE_FORMAT('".$_POST["fecha"]."','%d-%m-%Y')");
-		$idCompeticion =  mysqli_fetch_array($connect->query("select id_competicion idComp from juego  where id=".$game['id']));
 	}	
 	while ( $rowGam = mysqli_fetch_array( $resultGames ) ) {
 		$hIniV = explode(":",$rowGam['hora_inicio'])[0];
@@ -651,7 +607,7 @@ if ( $action == 'programJuego' ) {
 		$horaFin = $_POST["cmbHoraFin"].":".$_POST["minFin"].":".$_POST["cmbAmpmFin"];
 		$fecha = $_POST["fecha"];
 		$escenario = $_POST["cmbEscena"];
-		$query = "UPDATE juego SET fecha='".$fecha."',hora_inicio='".$horaInicio."',hora_fin='".$horaFin."',id_escenario=".$escenario.", id_competicion=".$idCompeticion['idComp'].",aplazado=0 WHERE id = ".$_POST[ "bthValId" ];
+		$query = "UPDATE juego SET fecha='".$fecha."',hora_inicio='".$horaInicio."',hora_fin='".$horaFin."',id_escenario=".$escenario." WHERE id = ".$_POST[ "bthValId" ];
 		$result = $connect->query( $query );
 		if($result == 1 && $alerta ){
 			$gameAux = mysqli_fetch_array( $connect->query("select j.*, es.nombre nombreEscena, s.nombre nombreSede from juego j join escenario es on j.id=".$_POST[ "bthValId" ]." and j.id_escenario = es.id join sede s on es.id_sede = s.id") );
@@ -674,19 +630,8 @@ if ( $action == 'programJuego' ) {
 }
 if ( $action == 'clearProg' ) {	
 	$id = $_GET[ 'id' ];
-	$result = $connect->query( "update juego SET fecha= null, hora_inicio=null, hora_fin=null, id_escenario = null, aplazado = 0 WHERE id=".$id);	
+	$result = $connect->query( "update juego SET fecha= null, hora_inicio=null, hora_fin=null, id_escenario = null WHERE id=".$id);	
 	echo json_encode(array('error'=>false,'description'=>'Registros Restablecido'));	
-}
-if ( $action == 'aplazarGame' ) {
-	//Limpiar Juego y aplazar
-	$id = $_GET[ 'id' ];
-	$idCompeticion =  mysqli_fetch_array($connect->query("select e.id_competicion idComp from juego j join equipo e on j.id=".$id." and j.id_equipo_1 = e.id limit 1"));
-	if($idCompeticion['idComp']!=null){
-		$result = $connect->query( "update juego SET fecha= null, hora_inicio=null, hora_fin=null, id_escenario = null, aplazado = 1, id_competicion= ".$idCompeticion['idComp']." WHERE id=".$id);	
-	}else{
-		$result = $connect->query( "update juego SET fecha= null, hora_inicio=null, hora_fin=null, id_escenario = null, aplazado = 1 WHERE id=".$id);	
-	}	
-	echo json_encode(array('error'=>false,'description'=>'Juego Aplazado'));	
 }
 if ( $action == 'addManualGame' ) {
 	if(isset($_POST['array'])){
@@ -709,7 +654,7 @@ if ( $action == 'delJuego' ) {
 	}
 }
 if ( $action == 'addFreeGame' ) {
-	$query = "INSERT INTO juego (nombre1,nombre2,tipo, id_competicion) VALUES ('".$_POST["nombre1"]."','".$_POST["nombre2"]."','AMISTOSO',".$_POST["cmbComp"].")";	
+	$query = "INSERT INTO juego (nombre1,nombre2,tipo) VALUES ('".$_POST["nombre1"]."','".$_POST["nombre2"]."','AMISTOSO')";	
 	$result = $connect->query( $query );	
 	echo json_encode(array('error'=>false,'description'=>'Registros Creados'));
 }
@@ -729,13 +674,13 @@ if ( $action == 'addUpdUser' ) {
 	$foto = '../images/fotosUsuarios/default.png';	
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
 	if( $bthAction == 1 ){ //insert data
-		//validar existencia usuario:
+		//validar existencia previa:
 		$userExist = mysqli_fetch_array($connect->query( "select count(1) total from usuario where correo='".$_POST["correo"]."' or documento ='".$_POST["documento"]."'"));
 		if( $userExist!=null && $userExist['total']<1 ){
 			if( !empty ($_FILES['foto']['name']) ){
 				//Upload foto:
 				$sourcePathFoto = $_FILES['foto']['tmp_name'];		
-				$targetPathFoto = "../images/fotosUsuarios/".$_POST[ 'documento' ].date("YmdHms").".png"; 
+				$targetPathFoto = "../images/fotosUsuarios/".$_POST[ 'nombres' ].date("YmdHms").".png"; 
 				move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 				$foto = $targetPathFoto;
 			}	
@@ -753,7 +698,7 @@ if ( $action == 'addUpdUser' ) {
 				echo json_encode(array('error'=>true,'description'=>'No se pudo Crear Registro'));
 			}
 		}else{
-			echo json_encode(array('error'=>true,'description'=>'El Usuario o el Correo ya Existe!'));
+			echo json_encode(array('error'=>true,'description'=>'El Usuario ya Existe!'));
 		}
 		
 	}else if( $bthAction == 2 ){ //update data
@@ -763,7 +708,7 @@ if ( $action == 'addUpdUser' ) {
 		if( !empty ($_FILES['foto']['name']) ){
 			//Upload foto:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
-			$targetPathFoto = "../images/fotosUsuarios/".$_POST[ 'documento' ].date("YmdHms").".png"; 
+			$targetPathFoto = "../images/fotosUsuarios/".$_POST[ 'nombres' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 			$foto = $targetPathFoto;
 			//Delete old foto from server:
@@ -797,26 +742,20 @@ if ( $action == 'getDataUser' ) {
 	$comp = mysqli_fetch_array( $connect->query( "select u.*, up.perfil from usuario u JOIN usuario_perfil up ON u.id = up.id_usuario  AND u.id=".$id ));
 	echo json_encode($comp);
 }
-if ( $action == 'delUser' ) {
-    $response = '';
+if ( $action == 'delUser' ) {	
 	$id = $_GET[ 'id' ];
-	//consultar usuario:
+	//Delete old foto from server:
 	$user = mysqli_fetch_array($connect->query( "select * from usuario WHERE id=".$id ));
-	//Asignar usuario administrador default al equipo para poder eliminar:
-	$update = $connect->query( "UPDATE equipo SET id_usuario = 1 WHERE id_usuario=".$id );
-	//Eliminar Usuario:
-	$result = $connect->query( "DELETE FROM usuario WHERE id=".$id );
-	if( $result == 1){
-	    $response = 'Registro Eliminado';
-	}else{
-	    $response = 'No se pudo Eliminar Registro';
-	}	
-	//Eliminar foto en el server:	
-	if( file_exists($user['url_foto']) && !strpos($user['url_foto'], 'default.png') ){
-        unlink($user['url_foto']);
+	if(!strpos($user['url_foto'], 'default.png')){
+		unlink($user[ 'url_foto']);
 	}
-	echo json_encode(array('error'=>false,'description'=>$response));
-	
+	$sql = "DELETE FROM usuario WHERE id=".$id;	
+	$result = $connect->query( $sql );
+	if( $result == 1){		
+		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
+	}else{
+		echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro'));
+	}
 }
 if ( $action == 'inscriptionEqui' ) {
 	$idComp = $_GET[ "idComp"];
@@ -840,8 +779,7 @@ if ( $action == 'delInscrip' ) {
 }
 if ( $action == 'delPlayer' ) {	
 	$id = $_GET[ 'id' ];
-	//$sql = "DELETE FROM jugador WHERE id=".$id;
-	$sql = "UPDATE jugador SET activo=0 WHERE id = ".$id;
+	$sql = "DELETE FROM jugador WHERE id=".$id;
 	$result = $connect->query( $sql );
 	if( $result == 1){		
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
@@ -879,7 +817,7 @@ if ( $action == 'addSan' ) {
 		$tipoSancion = mysqli_fetch_array( $connect->query( "select * from tipo_sancion where id = ".$id_tipo_sancion ));
 		$juego = mysqli_fetch_array( $connect->query( "select * from juego where id = ".$_GET["idJuego"] ));
 		foreach ($array as &$valor) { //por cada id_jugador:			
-		    $query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$juego['jornada'].",'".$juego['fecha']."')";
+			$query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$juego['jornada'].",NOW())";
 			$connect->query( $query );							
 			//validar vetar jugador:
 			if($tipoSancion['veta_jugador']){
@@ -1061,7 +999,7 @@ if ( $action == 'addAbono' ) {
 	if(isset($_POST['hdIdDto']) && $_POST['hdIdDto']==1){
 		$esDescuento = 1;	
 	}
-	$query = "INSERT INTO pago (id_equipo,abono,fecha,id_competicion, descuento, detalle) VALUES (".$_POST['hdIdEqui'].",".$_POST['valor'].",'".$_POST['fecha']."',".$_POST['hdIdComp'].",".$esDescuento.",'".$_POST['detalle']."')";
+	$query = "INSERT INTO pago (id_equipo,abono,fecha,id_competicion, descuento) VALUES (".$_POST['hdIdEqui'].",".$_POST['valor'].",'".$_POST['fecha']."',".$_POST['hdIdComp'].",".$esDescuento.")";
 	$connect->query( $query );	
 	echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
 }
@@ -1121,20 +1059,6 @@ if ( $action == 'addVetados' ) {
 	}
 	echo json_encode(array('error'=>false,'description'=>'Registros Creados'));
 }
-if ( $action == 'vetarJug' ) {
-    if(isset($_POST['bthDocVetPlayer']) && isset($_POST['motivo'])){
-        $query = "INSERT INTO jugador_vetado (documento_jugador,fecha,motivo) VALUES (".$_POST['bthDocVetPlayer'].",NOW(),'".$_POST['motivo']."')";
-        $connect->query( $query );
-    }
-    echo json_encode(array('error'=>false,'description'=>'Registro Vetado'));
-}
-if ( $action == 'vetarTeam' ) {
-    $idTeam = $_POST['idTeam'];
-    $motivo = $_POST['motivo'];
-    $query = "INSERT INTO jugador_vetado (documento_jugador,fecha,motivo) SELECT distinct j.documento, NOW(), '".$motivo."' from jugador j where j.id_equipo=".$idTeam." and j.activo is null and j.documento not in (select distinct documento from jugador_vetado)";
-    $connect->query( $query );
-    echo json_encode(array('error'=>false,'description'=>'Registros Vetados'));
-}
 if ( $action == 'delVetados' ) {
 	if(isset($_POST['array'])){		
 		$array = json_decode($_POST['array']);
@@ -1144,37 +1068,5 @@ if ( $action == 'delVetados' ) {
 	}
 	echo json_encode(array('error'=>false,'description'=>'Registros Eliminados'));
 }
-if ( $action == 'saveTemplateCarnet' ) {
-    
-    $color_header = $_POST['color_header'];
-    $color_body = $_POST['color_body'];
-    $color_footer = $_POST['color_footer'];
-    $text_header = $_POST['text_header'];
-    $text_body_1 = $_POST['text_body_1'];
-    $text_body_2 = $_POST['text_body_2'];
-    $text_body_3 = $_POST['text_body_3'];
-    $text_footer = $_POST['text_footer'];
-    $url_logo = $_POST['url_logo'];
-    $text_color_header = $_POST['text_color_header'];
-    $text_color_body = $_POST['text_color_body'];
-    $text_color_footer = $_POST['text_color_footer'];
-    
-    $query = "UPDATE carnet SET color_header = '".$color_header."'
-                ,color_body  = '".$color_body."'
-                ,color_footer  = '".$color_footer."'
-                ,text_header = '".$text_header."'
-                ,text_body_1 = '".$text_body_1."'
-                ,text_body_2 = '".$text_body_2."'
-                ,text_body_3 = '".$text_body_3."'
-                ,text_footer = '".$text_footer."'
-                ,url_logo = '".$url_logo."'
-                ,text_color_header = '".$text_color_header."'
-                ,text_color_body = '".$text_color_body."'
-                ,text_color_footer = '".$text_color_footer."' WHERE id=1 ";
-   $connect->query( $query );
-
-    echo json_encode(array('error'=>false,'description'=>'Template Actualizada'));
-}
-
 ?>
 <?php $connect->close(); ?>

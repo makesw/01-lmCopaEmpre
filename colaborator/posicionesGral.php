@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );

@@ -1,11 +1,14 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
-//las del ultimo año:
-$resultJugadores = $connect->query( "select * from jugador WHERE id_equipo=".$_GET[ 'idEqui' ]." ORDER BY nombres asc" );
+$resultJugadores = $connect->query( "select * from jugador WHERE id_equipo=".$_GET[ 'idEqui' ]." and activo is null ORDER BY nombres asc" );
 $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_GET[ 'idEqui' ] ));
 ?>
 <!DOCTYPE html>
@@ -94,7 +97,7 @@ $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado Jogadores de Equipo: <?php echo $equipo[ 'nombre' ]; ?></h3>						
+						<h3 class="panel-title">Listado Jugadores de Equipo: <?php echo $equipo[ 'nombre' ]; ?></h3>						
 					</div>
 					<div class="panel-body">
 					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-jug">Crear</button>
@@ -109,9 +112,8 @@ $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$
 								<th>Número</th>
 								<th>Teléfono</th>
 								<th>Correo</th>
-								<th>Goles</th>
 								<th>Delegado</th>
-								<!--th>Accciones</th -->
+								<th>Accciones</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -126,18 +128,17 @@ $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$
 								<td><?php echo $row['numero'];?></td>
 								<td><?php echo $row['telefono'];?></td>
 								<td class="text-center"><?php echo $row['correo'];?></td>
-								<td class="text-center"><?php echo $row['goles'];?></td>
 								<td class="size-80 text-center">
 									<span class="badge badge-bordered"><?php echo $row['es_delegado']==1?'DELEGADO':'';?></span>
 								</td>
-								<!-- td class="size-80 text-center">
+								<td class="size-80 text-center">
 									<a href="javaScript:editJug(<?php echo $row['id']; ?>)">
 									<i class="fa fa-edit"></i>
 									</a>
-									<a title="Borrar" href="javaScript:delPlayer('<?php echo $row['id']; ?>');">
+									<!-- a title="Borrar" href="javaScript:delPlayer('<?php echo $row['id']; ?>');">
 									<i class="icon-cancel icon-larger red-color"></i>
-									</a>												
-								</td -->
+									</a -->												
+								</td>
 							</tr>
 							<?php $iter++; } ?>							
 						</tbody>
@@ -216,7 +217,8 @@ $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$
 						<div class="col-sm-10">
 							<input type="checkbox" id="delegado" name="delegado">
 						 </div> 
-					</div>           																	
+					</div>
+					<div class="alert alert-danger" role="alert" hidden="true" id="div-msg-fail"></div>
 					<div class="form-group"> 
 						<div class="col-sm-offset-2 col-sm-10"> 
 							<button type="submit" class="btn btn-primary">Guardar</button> 
@@ -258,7 +260,7 @@ $('.dataTables-jugadores').DataTable({
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 10,
-	"searching": false,
+	"searching": true,
 	"bSort" : false,		
 	dom: '<"html5buttons" B>lTfgitp',
 		buttons: [				
@@ -276,9 +278,7 @@ $('.dataTables-jugadores').DataTable({
 					columns: ':visible'
 				}
 			}
-		]
-	
-	
+		]	
 });
 });
 	
@@ -288,11 +288,19 @@ jQuery( document ).on( 'submit', '#formCreateJug', function ( event ) {
 		type: 'POST',
 		data: new FormData( this ),
 		success: function ( data ) {
-			//console.log( data );
-			location.href = './jugadores.php?idEqui=<?php echo $equipo[ 'id'];?>';
+			console.log( data );
+			if( data.error ){
+				$('#div-msg-fail').text(data.description);			
+				$('#div-msg-fail').show();
+				setTimeout(function(){
+					$('#div-msg-fail').hide();
+				},4000);
+			}else{
+				location.href = './jugadores.php?idEqui=<?php echo $equipo[ 'id'];?>';
+			}	
 		},
 		error: function ( data ) {
-			//console.log( data );
+			console.log( data );
 		},
 		cache: false,
 		contentType: false,
@@ -319,7 +327,12 @@ function editJug( id ) {
 					$("#delegado").prop("checked", true);
 				}else{
 					$("#delegado").prop("checked", false);
-				}				
+				}
+				/*if(data.activo == null){
+					$("#activo").prop("checked", true);
+				}else{
+					$("#activo").prop("checked", false);
+				}	*/			
 				$('#modal-jug').modal('show');
 			},
 			error: function ( data ) {

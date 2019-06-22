@@ -2,54 +2,16 @@
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+	header( 'Location: ../index.html' );
 }
 require '../conexion.php';
-setlocale (LC_TIME,"spanish");
-date_default_timezone_set('America/Bogota');
-$createPlayer = true;
-//consultar datos de la competicion actual:
-$competencia = mysqli_fetch_array($connect->query( "select c.* from competicion c join equipo e on c.id = e.id_competicion and e.id = ".$_GET[ 'idEqui' ]." limit 1"));
-//consultar Jugadores del equipo:
-$resultJugadores = $connect->query( "select * from jugador WHERE id_equipo=".$_GET[ 'idEqui' ]." and activo is null ORDER BY nombres asc" );
-//Consultar datos de equipo
-$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_GET[ 'idEqui' ] ));
-//Validación seguridad, consultar equipo del usuario en sesion:
-$equipoUserSession = mysqli_fetch_array($connect->query( "select e.*, c.nombre competicion from equipo e join competicion c on e.id_usuario = ".$_SESSION[ 'dataSession' ]['id']." and e.id_competicion = c.id order by nombre asc" ));
-if( $equipoUserSession!= null && ($equipoUserSession['id']!=$equipo['id'])){
-    header( 'Location: ../salir.php' );
-}
-//1. validar catidad máxima jugadores por lo definido en competencia o en efecto máximo 25:
-$totalJugadores = mysqli_fetch_array($connect->query( "select count(1) total from jugador WHERE id_equipo=".$_GET[ 'idEqui' ]." and activo is null" ));
-$maxJug = 25;
-if($competencia['nummxjug']!=null && $competencia['nummxjug']>0){
-    $maxJug = $competencia['nummxjug'];
-    if( $totalJugadores['total']>=$competencia['nummxjug'] ){
-        $createPlayer = false;        
-    }
-}else{
-    if( $totalJugadores['total']>=25 ){
-        $createPlayer = false;
-    }
-}
-$fechMax = $competencia["fech_max_pla"];
-if ( time() > strtotime($fechMax.'+23 hours') ){
-    $createPlayer = false;
-}
-
-//2. Consultar cuantos juegos tiene el equipo en la competencia actual:
-$juegos = mysqli_fetch_array($connect->query( "select count(1) total from juego j join fase f on j.id_fase = f.id and (j.id_equipo_1= ".$equipo['id']." or j.id_equipo_2=".$equipo['id'].") and (j.fecha <now() ) and j.informado=1 and f.id_competicion = ".$equipo['id_competicion']));
-
-//3. Solo hasta la fecha 4 se permite adicionar jugadores
-if($juegos['total'] >= 4){
-    $createPlayer = false;
-}
-
-$date_max = 'No definida!'; 
-if(!empty($competencia["fech_max_pla"])){
-    $date_aux = new DateTime($competencia["fech_max_pla"]);
-    $date_max = $date_aux->format('d-m-Y');
-}
-
+$resultJugadores = $connect->query( "select j.id, j.documento, concat(j.nombres,'',j.apellidos) nombreJugador, numero, j.url_foto, e.nombre equipo, c.nombre competicion from jugador j join equipo e on j.id_equipo = e.id join inscripcion i on i.id_equipo = e.id join competicion c on i.id_competicion = c.id and c.activa =1 order by nombreJugador asc" );
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,7 +22,7 @@ if(!empty($competencia["fech_max_pla"])){
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="Mouldifi - A fully responsive, HTML5 based admin theme">
 	<meta name="keywords" content="Responsive, HTML5, admin theme, business, professional, Mouldifi, web design, CSS3">
-	<title>Inicio</title>
+	<title>Carnets</title>
 	<!-- Site favicon -->
 	<link rel='shortcut icon' type='image/x-icon' href='../images/favicon.ico'/>
 	<!-- /site favicon -->
@@ -118,81 +80,67 @@ if(!empty($competencia["fech_max_pla"])){
 					<li class="profile-info dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> <img width="44" class="img-circle avatar" alt="" src="<?php echo $_SESSION['dataSession']['url_foto'];?>"><?php echo $_SESSION['dataSession']['nombres'].' '.$_SESSION['dataSession']['apellidos'] ?></a>
 
 			</div>
+
+
 			<div class="col-sm-6 col-xs-5">
 				<div class="pull-right">
 					<a title="Salir" href="../salir.php"><img src="../images/btn-close.png" style="height: 30px;widows: 30px;" /></a>
 				</div>
 			</div>
+
 		</div>
 		<!-- /main header -->
 
 		<!-- Main content -->
 		<div class="main-content">
-			<h1 class="page-title"><a href="equipo.php">Equipo</a> / Jugadores / Equipo: <?php echo $equipo[ 'nombre' ]; ?></h1>
-			<div class="row">			
+			<h1 class="page-title">Administración / Carnets</h1>
+			<div class="row">
+			
 			<div class="col-lg-12">
-				<div class="panel panel-minimal">
-					<div>
-					<h3>
-					<strong>Notas Restrictivas:</strong>
-					</h3>
-					<h4>
-					<?php ;  ?>
-					*La cantidad máxima de jugadores que puedes iscribir es: <strong><?php echo $maxJug; ?></strong><br/>
-					*Tienes hasta la fecha: <strong><?php echo $date_max; ?></strong> para poder crear, modificar y eliminar jugadores, después no se podran modificar
-					</h4>	
-					<button <?php if(!$createPlayer){ ?>disabled<?php } ?> type="button" class="btn btn-primary" onClick="javascript:createPlayer();">Crear</button><br/>
+				<div class="panel panel-default">
+				<div class="panel-heading clearfix">
+						<h3 class="panel-title">Listado Jugadores</h3>						
+					</div>
+					<div class="panel-body">
 					<div class="table-responsive">
-					<table id="playersTable" class="table table-users table-bordered table-hover dataTables-comp">
+					<table class="table table-users table-bordered table-hover dataTables-jugadores" >
 						<thead>
 							<tr>
-								<th></th>
 								<th>Foto</th>
 								<th>Documento</th>
 								<th>Nombre</th>	
 								<th>Número</th>
-								<th>Teléfono</th>
-								<th>Correo</th>
-								<th>Goles</th>
-								<th>Delegado</th>
-								<th>Accciones</th>															
+								<th>Equipo</th>
+								<th>competición</th>
+								<th></th>
 							</tr>
 						</thead>
 						<tbody>
-							<?php $iter = 1;
+							<?php
 							while($row = mysqli_fetch_array($resultJugadores)){
-							
-							//consultar Goles:
-							$goles = mysqli_fetch_array($connect->query( "select COALESCE(sum(g.valor),0)  goles from gol g join jugador j on g.id_jugador = j.id and j.id = ".$row['id']." join equipo e on j.id_equipo = e.id and e.id =".$row['id_equipo']." join juego jueg on g.id_juego = jueg.id join fase f on jueg.id_fase = f.id join competicion c on f.id_competicion = c.id and c.id = e.id_competicion" ));
-							
-							//Validar jugador vetado:
-							$vetado = mysqli_fetch_array($connect->query( "select count(1) total from jugador_vetado WHERE documento_jugador='".$row[ 'documento' ]."'"));
-								
 							?>
-							<tr <?php if($vetado['total']>0){?> style="background-color: crimson;" title="Jugador Jugador Vetado" <?php } ?>>
-								<td class="size-80"><?php echo $iter; ?></td>
+							<tr>
 								<td class="size-80"><img title="" alt="" src="<?php echo $row['url_foto'];?>" class="avatar img-circle"></td>
 								<td class="size-80"><?php echo $row['documento']; ?></td>	
-								<td><strong><?php echo $row['nombres'].' '.$row['apellidos']; ?></strong></td>
+								<td><strong><?php echo $row['nombreJugador']; ?></strong></td>
 								<td><?php echo $row['numero'];?></td>
-								<td><?php echo $row['telefono'];?></td>
-								<td class="text-center"><?php echo $row['correo'];?></td>
-								<td class="text-center"><?php echo $goles['goles'];?></td>
-								<td class="size-80 text-center">
-									<span class="badge badge-bordered"><?php echo $row['es_delegado']==1?'SI':'';?></span>
-								</td>
+								<td><?php echo $row['equipo'];?></td>
+								<td><?php echo $row['competicion'];?></td>
 								<td class="size-80 text-center">									
-									<?php if($vetado['total']<1){ ?>
-									<a href="javaScript:editJug(<?php echo $row['id']; ?>)">
-									<i class="fa fa-edit"></i>
-									</a>									
-									<a title="Borrar" href="javaScript:delPlayer('<?php echo $row['id']; ?>');">
-									<i class="icon-cancel icon-larger red-color"></i>
-									</a>		
-									<?php } ?>
+									
+									<div class="btn-group">
+										  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											Acciones <span class="caret"></span>
+										  </button>
+										  <ul class="dropdown-menu">
+											<li><a href="javaScript:editJug(<?php echo $row['id']; ?>);">Editar Jugador</a></li>
+											<li><a href="templateCarnet.php?idPlayer=<?php echo $row['id'];?>">Imprimir Carnet</a></li>
+										  </ul>
+									</div>
+									
 								</td>
 							</tr>
-							<?php $iter++; } ?>							
+							<?php } ?>							
 						</tbody>
 					</table>
 				</div>		
@@ -212,7 +160,6 @@ if(!empty($competencia["fech_max_pla"])){
 
 </div>
 <!-- /page container -->
-
 <div id="modal-jug" class="modal fade" tabindex="-1" role="dialog">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
@@ -231,8 +178,7 @@ if(!empty($competencia["fech_max_pla"])){
 					<div class="form-group"> 
 						<label class="col-sm-2 control-label" for="nombre">documento</label> 
 						<div class="col-sm-10"> 
-							<input type="number" placeholder="Documento" id="documento" name="documento" class="form-control"  required>
-							<input type="hidden" id="docHiden" name="docHiden">
+							<input type="text" placeholder="Documento" id="documento" name="documento" class="form-control"  required>
 						 </div> 
 					</div>
 					<div class="form-group"> 
@@ -270,8 +216,7 @@ if(!empty($competencia["fech_max_pla"])){
 						<div class="col-sm-10">
 							<input type="checkbox" id="delegado" name="delegado">
 						 </div> 
-					</div>
-					<div class="alert alert-danger" role="alert" hidden="true" id="div-msg-fail"></div>
+					</div>           																	
 					<div class="form-group"> 
 						<div class="col-sm-offset-2 col-sm-10"> 
 							<button type="submit" class="btn btn-primary">Guardar</button> 
@@ -279,7 +224,6 @@ if(!empty($competencia["fech_max_pla"])){
 					</div> 
 					<input type="hidden" id="bthAction" name="bthAction" value="1" />
 					<input type="hidden" id="bthValId" name="bthValId" value="" />
-					<input type="hidden" id="bthValEqui" name="bthValEqui" value="<?php echo $equipo[ 'id']; ?>" />
 				</form>
 			</div>
 		</div>
@@ -287,8 +231,6 @@ if(!empty($competencia["fech_max_pla"])){
 	</div>
 	<!-- /.modal-dialog -->
 </div>
-
-
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
 <script src="../js/bootstrap.min.js"></script>
@@ -308,74 +250,26 @@ if(!empty($competencia["fech_max_pla"])){
 </body>
 </html>
 <script>
-$(document).ready(function() {
-    $('#playersTable').DataTable( {
-    	"searching": true,
-    	"bLengthChange": false,
-    	"bInfo": false,
-    	"pageLength": 10,
-    	dom: '<"html5buttons" B>lTfgitp',
-    	buttons: [				
-			{
-				extend: 'excelHtml5',
-				title: '<?php echo 'Jugadores-'.$equipo['nombre']; ?>',
-				exportOptions: {
-					columns: [ 2, 3, 4, 5, 6, 7, 8 ]
-				}
-			},
-			{
-				extend: 'pdfHtml5',
-				title: '<?php echo 'Jugadores-'.$equipo['nombre']; ?>',
-				exportOptions: {
-					columns: [ 2, 3, 4, 5, 6, 7, 8 ]
-				}
-			}
-		]
-    } );
-} );
-	
-jQuery( document ).on( 'submit', '#formCreateJug', function ( event ) {
-	$.ajax( {
-		url: 'server.php?action=addUpdJug',
-		type: 'POST',
-		data: new FormData( this ),
-		success: function ( data ) {
-			console.log( data );
-			if( data.error ){
-				$('#div-msg-fail').text(data.description);			
-				$('#div-msg-fail').show();
-				setTimeout(function(){
-					$('#div-msg-fail').hide();
-				},4000);
-			}else{
-				location.href = './jugadores.php?idEqui=<?php echo $equipo[ 'id'];?>';
-			}			
-		},
-		error: function ( data ) {
-			console.log( data );
-		},
-		cache: false,
-		contentType: false,
-		processData: false
-	} );
-	return false;
-} );
+$(document).ready(function () {
+	$('.dataTables-jugadores').DataTable({
+		"bLengthChange": false,
+		"bInfo": false,
+		"pageLength": 10,
+		"searching": true,
+		"bSort" : true
+
+	});
+});
 function editJug( id ) {
-    var formData = new FormData();
-	//formData.append(this);
-	formData.append('file', $('input[type=file]')[0].files[0]);
 	$.ajax( {
 			url: 'server.php?action=getDataJug&id=' + id,
 			type: 'POST',
-			data: formData,
+			data: new FormData( this ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
-				<?php if($juegos['total'] > 0) {?> $('#documento').prop('readonly', true);<?php } ?>
 				$("#bthValId").val(data.id);
-				$("#bthValEqui").val(<?php echo $equipo[ 'id'];?>);
 				$("#documento").val(data.documento);
-				$("#docHiden").val(data.telefono);
 				$("#nombres").val(data.nombres);
 				$("#apellidos").val(data.apellidos);
 				$("#numero").val(data.numero);
@@ -395,28 +289,25 @@ function editJug( id ) {
 			contentType: false,
 			processData: false
 		} );
-}
-function delPlayer( id ) {
-    var formData = new FormData();
-	//formData.append(this);
-	if ( confirm( 'Confirma Eliminar?' ) ) {
-		$.ajax( {
-			url: 'server.php?action=delPlayer&id=' + id,
-			type: 'POST',
-			data: formData,
-			success: function ( data ) {
-				//console.log( data );
-				location.href = './jugadores.php?idEqui=<?php echo $equipo[ 'id'];?>';
-			},
-			error: function ( data ) {
-				//console.log( data );
-			},
-			cache: false,
-			contentType: false,
-			processData: false
-		} );
-	}
-}
+}	
+jQuery( document ).on( 'submit', '#formCreateJug', function ( event ) {
+	$.ajax( {
+		url: 'server.php?action=addUpdJug',
+		type: 'POST',
+		data: new FormData( this ),
+		success: function ( data ) {
+			//console.log( data );
+			location.href = './carnet.php';
+		},
+		error: function ( data ) {
+			//console.log( data );
+		},
+		cache: false,
+		contentType: false,
+		processData: false
+	} );
+	return false;
+} );
 function readURL( input ) {
 	if ( input.files && input.files[ 0 ] ) {
 		var typeFile = input.files[ 0 ].type;
@@ -425,21 +316,6 @@ function readURL( input ) {
 			$("#foto").val('');
 		}
 	}
-}
-function createPlayer() {
-	$('#documento').prop('readonly', false);
-	$("#bthValEqui").val('');
-	$("#documento").val('');
-	$("#docHiden").val('');
-	$("#nombres").val('');
-	$("#apellidos").val('');
-	$("#numero").val('');
-	$("#telefono").val('');
-	$("#correo").val('');				
-	$("#delegado").prop("checked", false);
-	$("#bthValEqui").val(<?php echo $equipo[ 'id'];?>);
-					
-	$('#modal-jug').modal('show');
 }
 </script>
 <?php $connect->close(); ?>

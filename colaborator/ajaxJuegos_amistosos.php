@@ -1,13 +1,23 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');
 
 $resultJuegos = $connect->query( "select * from juego where tipo='AMISTOSO'" );
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
 ?>
-<button class="btn btn-success" type="button" data-toggle="modal" data-target="#modal-agregar" disabled>Agregar Juego</button>
-<button class="btn btn-danger" type="button" onClick="javascript:delJuegos();" disabled>Borrar Juegos</button>
-<div class="table-responsive">
 <table class="table table-striped table-bordered table-hover dataTables-juegos" >
 <thead>
 	<tr>
@@ -19,7 +29,7 @@ $resultJuegos = $connect->query( "select * from juego where tipo='AMISTOSO'" );
 		<th>HORA FIN</th>
 		<th>ESCENARIO</th>
 		<th>FECHA</th>
-		<!--th></th -->
+		<th></th>
 	</tr>
 </thead>
 <tbody>
@@ -64,13 +74,19 @@ $iter = 1;
 			<td>
 				<?php echo $date_a; ?>
 			</td>
-			<!--td>
-				<button class="btn btn-success btn-outline" type="button" onClick="javascript:fnProgramar(<?php echo $rowJuego['id']; ?>,'<?php echo $rowJuego['nombre1']; ?>','<?php echo $rowJuego['nombre2']; ?>');">Programar</button>
-				<button class="btn btn-warning btn-outline" type="button" onClick="javascript:fnClearProg(<?php echo $rowJuego['id']; ?>);">Limpiar</button>
-				<a title="Borrar" href="javaScript:delGame('<?php echo $rowJuego['id']; ?>');">
-					<i class="icon-cancel icon-larger red-color"></i>
-				</a>
-			</td -->			
+			<td>
+				<div class="btn-group">
+					  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Acciones <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu">
+						<li><a href="javascript:fnProgramar(<?php echo $rowJuego['id']; ?>,'<?php echo $rowJuego['nombre1']; ?>','<?php echo $rowJuego['nombre2']; ?>');">Programar</a></li>
+					  	<!--li><a href="javascript:fnAplazar(<?php echo $rowJuego['id']; ?>);">Aplazar</a></li --> 
+						<li><a href="javascript:fnClearProg(<?php echo $rowJuego['id']; ?>);">Limpiar Progrmación</a></li>
+						<!-- li><a href="javaScript:delGame('<?php echo $rowJuego['id']; ?>');">Eliminar Juego</a></li -->						
+					  </ul>
+				</div>				
+			</td>			
 		</tr>
 <?php $iter++; } ?>
 </tbody>
@@ -83,7 +99,10 @@ $('.dataTables-juegos').DataTable({
 	"bSort" : false,
 	"bLengthChange": false,
 	"bInfo": false,
-	"pageLength": 20
+	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 }
 });
 });
 </script>

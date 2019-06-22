@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultSedes = $connect->query( "select * from sede order by nombre asc" );
@@ -103,14 +107,14 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 								</ul>
 							</div>
 							<div class="panel-body">
-								<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-sede">Agregar</button> -->
+								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-sede">Agregar</button>
 								<div class="table-responsive">
 									<table class="table table-striped table-bordered table-hover dataTables-sedes" >
 										<thead>
 											<tr>
 												<th>#</th>
 												<th>Nombre</th>
-												<!--th></th -->
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
@@ -123,14 +127,14 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 												<td>
 													<?php echo $sede['nombre']; ?>
 												</td>
-												<!--td>
+												<td>
 												<a href="javaScript:editSede(<?php echo $sede['id']; ?>)">
 												<i class="fa fa-edit"></i>
 												</a>
 												<a title="Borrar" href="javaScript:delSede('<?php echo $sede['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>										
-												</td -->
+												</a>												
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>
@@ -150,7 +154,7 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 								</ul>
 							</div>
 							<div class="panel-body">
-								<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-escena">Agregar</button> -->
+								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-escena">Agregar</button>
 								<div class="table-responsive">
 									<table class="table table-striped table-bordered table-hover dataTables-escena" >
 										<thead>
@@ -158,7 +162,7 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 												<th>#</th>
 												<th>Nombre</th>
 												<th>Sede</th>
-												<!--th></th -->
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
@@ -174,14 +178,14 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 												<td>
 													<?php echo $escena['nombreSede']; ?>
 												</td>
-												<!-- td>
+												<td>
 												<a href="javaScript:editEscena(<?php echo $escena['id']; ?>)">
 												<i class="fa fa-edit"></i>
 												</a>
 												<a title="Borrar" href="javaScript:delEscena('<?php echo $escena['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>											
-												</td -->
+												</a>												
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>
@@ -201,7 +205,7 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 								</ul>
 							</div>
 							<div class="panel-body">
-								<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-tsanc">Agregar</button> -->
+								<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-create-tsanc">Agregar</button>
 								<div class="table-responsive">
 									<table class="table table-striped table-bordered table-hover dataTables-tpsancion" >
 										<thead>
@@ -212,7 +216,7 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 												<th>Fechas</th>
 												<th>Valor</th>
 												<th>Veta Jugador</th>
-												<!--th></th -->
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
@@ -237,14 +241,14 @@ $resultEscena = $connect->query( "select e.*,s.nombre nombreSede from escenario 
 												<td>
 													<?php echo $tSusp['veta_jugador']==1?'SI':'NO'; ?>
 												</td>
-												<!-- td>
+												<td>
 												<a href="javaScript:editTsancion(<?php echo $tSusp['id']; ?>)">
 												<i class="fa fa-edit"></i>
 												</a>
 												<a title="Borrar" href="javaScript:delTsanc('<?php echo $tSusp['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>		
-												</td -->
+												</a>												
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>

@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -13,6 +17,11 @@ if(isset($_GET[ 'idComp' ])){
 if(isset($_GET[ 'idFase' ])){
 	$idFase = $_GET[ 'idFase' ];
 }
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,6 +29,7 @@ if(isset($_GET[ 'idFase' ])){
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta http-equiv="cache-control" content="no-cache" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="Mouldifi - A fully responsive, HTML5 based admin theme">
 	<meta name="keywords" content="Responsive, HTML5, admin theme, business, professional, Mouldifi, web design, CSS3">
@@ -97,10 +107,7 @@ if(isset($_GET[ 'idFase' ])){
 			<h1 class="page-title">Administración / Equipos * Grupo</h1>
 			<div class="row">			
 			<div class="col-lg-12">
-				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Equipos * Grupo</h3>						
-					</div>
+				<div class="panel panel-default">				
 					<div class="panel-body">
 						<form>
 							  <div class="form-group">
@@ -126,8 +133,7 @@ if(isset($_GET[ 'idFase' ])){
 			</div>	
 			<h1 class="page-title">Grupos</h1>		
 			<div class="row">
-				<div id="divGroupContent">
-				</div>
+				<div id="divGroupContent"></div>
 			</div>			
 			<!-- Footer -->
 			<?php include("./footer.html");?>
@@ -150,17 +156,8 @@ if(isset($_GET[ 'idFase' ])){
 			</div>
 			<div class="modal-body">
 				<form id="formAddEquiGru" method="post">
-					<div class="table-responsive">
-						<table class="table table-striped table-bordered table-hover dataTables-addEquiGru">
-						<thead>
-							<tr>		
-								<th>Nombre</th>
-								<th>Seleccione</th>
-							</tr>
-						</thead>
-						<tbody id="tbodyAddEquiGru">	
-						</tbody >						
-						</table>
+					<div class="table-responsive" id="tbodyAddEquiGru">
+						
 					</div>
 					<input type="hidden" id="idGrupHid" name="idGrupHid" value="" />
 					<button type="submit" class="btn btn-primary">Agregar</button> 
@@ -273,7 +270,7 @@ function editEqui( id ) {
 		} );
 }
 function addEquToGru( idGrupo ){
-	$.post("ajaxEquipos.php?opt=1&idComp="+idComp, { idFase: idFase }, function(data){
+	$.post("ajaxPosiciones.php?grue=1&idComp="+idComp+"&idGrupo="+idGrupo+"&idFase="+idFase, { idFase: idFase }, function(data){
 		//console.log(data);
 		$("#tbodyAddEquiGru").html(data);
 		if(!paginationTable){
@@ -311,9 +308,10 @@ if( idComp != null ){
 	$("#cmbComp").val(idComp);
 	 $.post("ajaxFases.php", { elegido: idComp }, function(data){
 	$("#cmbFase").html(data);
+	$("#cmbFase").val(idFase);
 	});
 	$("#divGroupContent").load('ajaxGrupos.php?idFase='+idFase);
-	$("#cmbFase").val(idFase);
+	
 }
 function delEquiGru( id ) {
 	if ( confirm( 'Confirma Eliminar?' ) ) {

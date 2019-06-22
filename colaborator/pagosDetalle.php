@@ -1,13 +1,18 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 //las del ultimo año:
 $resultPagos = $connect->query( "select * from pago where pago.id_equipo = ".$_GET[ 'idEqui' ]." and id_competicion = ".$_GET[ 'id_comp' ]." order by fecha desc" );
 $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_GET[ 'idEqui' ] ));
 $competicion = mysqli_fetch_array($connect->query( "select * from competicion WHERE id=".$_GET[ 'id_comp' ] ));
+
 
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Cache-Control: post-check=0, pre-check=0', false);
@@ -100,16 +105,17 @@ header('Pragma: no-cache');
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado de Pagos de Equipo: <?php echo $equipo[ 'nombre' ]; ?></h3>						
+						<h3 class="panel-title"><?php echo "Equipo: ".$equipo[ 'nombre' ]." |  Competición: ".$competicion[ 'nombre' ]; ?></h3>						
 					</div>
 					<div class="panel-body">					
 						<div class="table-responsive">
 					<table class="table table-users table-bordered table-hover dataTables-pagos" >
 						<thead>
 							<tr>								
-								<th>Abono</th>
+								<th>Valor</th>
 								<th>Fecha</th>
-								<th>Nombre Competicion</th>
+								<th>Tipo</th>
+								<th>Descripción</th>
 								<th></th>
 							</tr>
 						</thead>
@@ -118,11 +124,14 @@ header('Pragma: no-cache');
 							while($row = mysqli_fetch_array($resultPagos)){
 								$date_f = new DateTime($row['fecha']);
 								$date_f = $date_f->format('d-m-Y');
+								$tipo = "Abono";
+								if($row['descuento']){$tipo="Descuento";}
 							?>
 							<tr>								
-								<td class="text-center"><?php echo '$ '.number_format($row['abono']);?></td>
+								<td class="text-center"><?php echo ' $ '.number_format($row['abono']);?></td>
 								<td class="text-center"><?php echo $date_f;?></td>
-								<td class="text-center"><?php echo $competicion['nombre'];?></td>
+								<td class="text-center"><?php echo $tipo;?></td>
+								<td class="text-center"><?php echo $row['detalle'];?></td>
 								<td class="text-center">
 									<a title="Borrar" href="javaScript:delPago('<?php echo $row['id']; ?>');">
 								 	<i class="icon-cancel icon-larger red-color"></i> </a>

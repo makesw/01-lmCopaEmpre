@@ -1,11 +1,17 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $idFase = $_GET[ 'idFase' ];
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
-$resultGrupos = $connect->query( "select g.* from fase f join grupo g on f.id = g.id_fase and f.id =".$idFase." order by g.nombre asc" );
 setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');
-
 $arrayData = array();
 $arrayDataOrder = array();
 $arrayDataOrderFinal = array();
@@ -15,97 +21,160 @@ $empate = false;
 $persisteEmpate = false;
 $criterio ='';
 $operador ='menor';
-
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
-
-?>
-Criterios: JUG=Jugados, GAN=Ganados, EMP=Empatados, PER=Perdidos, GAF=Goles a Favor, GEC=Goles en Contra, DIF=Difrencia Goles, PTS=Puntos
-<div class="table-responsive">
-<table class="table table-striped table-bordered table-hover dataTables-tableGrupos" >
-<thead>
-	<tr>
-		<th colspan="9"><strong>Tabla de Posiciones</strong></th>	
-	</tr>
-</thead>
-<tbody>
-<?php while($row = mysqli_fetch_array($resultGrupos)){ 
-	calaculateTableGroup($row['id'],$idFase,$idComp);	
-?>	
-<tr>	
-	<td  colspan="9">
-		<strong><?php echo $row['nombre']; ?></strong>
-	</td>
-	<td hidden="true"></td>			
-	<td hidden="true"></td>
-	<td hidden="true"></td>
-	<td hidden="true"></td>
-	<td hidden="true"></td>
-	<td hidden="true"></td>
-	<td hidden="true"></td>
-	<td hidden="true"></td>				
-</tr>
-<tr>
-		<td>Equipo</td>
-		<td>JUG</td>
-		<td>GAN</td>
-		<td>EMP</td>
-		<td>PER</td>
-		<td>GAF</td>
-		<td>GEC</td>
-		<td>DIF</td>
-		<td>PTS</td>		
-	</tr>
-<?php 
-	for( $i = 0; $i < count($arrayDataOrderFinal); $i++){?>
-	<tr style="<?php if($i < $row['clasifican'] ){echo "background-color: #bbebba;"; } ?>">	
-		<td><?php echo $arrayDataOrderFinal[$i]['nombreEqui']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['JUG']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['GAN']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['EMP']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['PER']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['GAF']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['GEC']; ?></td>
-		<td><?php echo $arrayDataOrderFinal[$i]['DIF']; ?></td>
-		<td><strong><?php echo $arrayDataOrderFinal[$i]['PTS']; ?></strong></td>					
-	</tr>												 
-<?php } 
-} 
-?>
-</tbody>
-</table>
-</div>
-<script>
-$(document).ready(function () {
-$('.dataTables-tableGrupos').DataTable({
-	"searching": false,
-	"bSort" : false,
-	"bLengthChange": false,
-	"bInfo": false,
-	"pageLength": 20,
-	"oLanguage": {
-	   "sSearch": "Buscar: "
-	 },
-	dom: '<"html5buttons" B>lTfgitp',
-		buttons: [				
-			{
-				extend: 'excelHtml5',
-				exportOptions: {
-					columns: ':visible'
-				}
-			},
-			{
-				extend: 'pdfHtml5',
-				exportOptions: {
-					columns: ':visible'
-				}
-			}
-		]
-});
-});
-</script>
-<?php 
+$grue = isset($_GET[ 'grue' ]);
+if( $grue == 1 ){
+	//consultar datos la fase nueva:
+	$fase = mysqli_fetch_array($connect->query("select * from fase where id=".$idFase));
+	if ( $fase['numero'] > 1 ){//consultar tabla de la fase anterior		
+		$faseAnterior = mysqli_fetch_array($connect->query("select * from fase where numero=".($fase['numero']-1)." and id_competicion=".$idComp));	
+		$idFase = $faseAnterior['id'];
+		$resultGrupos = $connect->query( "select g.* from fase f join grupo g on f.id = g.id_fase and f.id =".$idFase." order by g.nombre asc" );
+		?>
+		<strong>Criterios</strong>: JUG=Jugados, GAN=Ganados, EMP=Empatados, PER=Perdidos, GAF=Goles a Favor, GEC=Goles en Contra, DIF=Difrencia Goles, PTS=Puntos<br/>
+		<strong>Colores:</strong> Verde=Equipos Clasificados, Amarillo=Ganador por Penales
+		<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover dataTables-tableGrupos" >
+		<thead>
+			<tr>
+				<th colspan="9"><strong>Tabla de Posiciones</strong></th>	
+			</tr>
+		</thead>
+		<tbody>
+		<?php while($row = mysqli_fetch_array($resultGrupos)){ 
+			calaculateTableGroup($row['id'],$idFase,$idComp);	
+		?>	
+		<tr>	
+			<td  colspan="9" style="background-color: #E02D32;color: white;" >
+				<strong><?php echo $row['nombre']; ?></strong>
+			</td>
+			<td hidden="true"></td>			
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>				
+		</tr>
+		<tr>	<?php if( $grue ==1 ){ ?> <td>Sel.</td> <?php } ?>
+				<td>Equipo</td>
+				<td>JUG</td>
+				<td>GAN</td>
+				<td>EMP</td>
+				<td>PER</td>
+				<td>GAF</td>
+				<td>GEC</td>
+				<td>DIF</td>
+				<td>PTS</td>		
+			</tr>
+		<?php 
+			for( $i = 0; $i < count($arrayDataOrderFinal); $i++){?>
+			<tr style="<?php if($i < $row['clasifican'] ){echo "background-color: #ACFA58;"; } ?><?php if(!empty($arrayDataOrderFinal[$i]['ptsPenales']) && $arrayDataOrderFinal[$i]['ptsPenales']>0){echo "background-color: #F4FA58 !important;"; } ?>">	
+				<?php if( $grue ==1 ){ ?> <td><input name="checkbox[]" type="checkbox" value="<?php echo $arrayDataOrderFinal[$i]['id_equipo']; ?>"></td> <?php } ?>
+				<td><?php echo $arrayDataOrderFinal[$i]['nombreEqui']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['JUG']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GAN']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['EMP']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['PER']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GAF']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GEC']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['DIF']; ?></td>
+				<td><strong><?php echo $arrayDataOrderFinal[$i]['PTS']; ?></strong></td>					
+			</tr>												 
+		<?php } 
+		} 
+		?>
+		</tbody>
+		</table>
+		</div>
+		<?php 
+	}else if( $fase['numero'] ==1 ){ // listar equipos de la competición aun no inscritos		
+		$resultEquipos = $connect->query("select distinct e.* from equipo e JOIN inscripcion i ON e.id = i.id_equipo AND i.id_competicion = ".$idComp." AND e.id NOT IN( select distinct e.id from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase." JOIN equipo_grupo eg ON g.id = eg.id_grupo JOIN equipo e ON eg.id_equipo = e.id) ORDER BY e.nombre asc");	
+		
+		$table='<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover dataTables-tableGrupos" >
+		<thead>
+			<tr>
+				<th colspan="9"><strong>Equipos Inscritos</strong></th>	
+			</tr>
+		</thead>
+		<tbody>';
+		while($row = mysqli_fetch_array($resultEquipos)){
+			 $table .= '<tr><td>'.$row['nombre'].'</td><td><input name="checkbox[]" type="checkbox" value="'.$row["id"].'"></td></tr>';
+		}
+		$table .= '</tbody>
+		</table>
+		</div>';
+		echo $table;
+		}
+}else{//consultar tabla de la fase actual:
+		$fase = mysqli_fetch_array($connect->query("select * from fase where id=".$idFase));
+		$resultGrupos = $connect->query( "select g.* from fase f join grupo g on f.id = g.id_fase and f.id =".$idFase." order by g.nombre asc" );
+		?>
+		<strong>Criterios</strong>: JUG=Jugados, GAN=Ganados, EMP=Empatados, PER=Perdidos, GAF=Goles a Favor, GEC=Goles en Contra, DIF=Difrencia Goles, PTS=Puntos<br/>
+		<strong>Colores:</strong> Verde=Equipos Clasificados o Ganador, Amarillo=Ganador por Penales
+		<div class="table-responsive">
+		<table class="table table-striped table-bordered table-hover dataTables-tableGrupos" >
+		<thead>
+			<tr>
+				<th colspan="9"><strong>Tabla de Posiciones</strong></th>	
+			</tr>
+		</thead>
+		<tbody>
+		<?php while($row = mysqli_fetch_array($resultGrupos)){ 
+			calaculateTableGroup($row['id'],$idFase,$idComp);	
+		?>	
+		<tr>	
+			<td  colspan="9" style="background-color: #E02D32;color: white;" >
+				<strong><?php echo $row['nombre']; ?></strong>
+			</td>
+			<td hidden="true"></td>			
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>
+			<td hidden="true"></td>				
+		</tr>
+		<tr>	<?php if( $grue ==1 ){ ?> <td>Sel.</td> <?php } ?>
+				<td>Equipo</td>
+				<td>JUG</td>
+				<td>GAN</td>
+				<td>EMP</td>
+				<td>PER</td>
+				<td>GAF</td>
+				<td>GEC</td>
+				<td>DIF</td>
+				<td>PTS</td>
+				<!--td>PEN</td-->		
+			</tr>
+		<?php 
+			for( $i = 0; $i < count($arrayDataOrderFinal); $i++){?>
+			<tr style="<?php if($i < $row['clasifican'] ){echo "background-color: #ACFA58;"; } ?><?php if(!empty($arrayDataOrderFinal[$i]['ptsPenales']) && $arrayDataOrderFinal[$i]['ptsPenales']>0){echo "background-color: #F4FA58 !important;"; } ?>">	
+				<?php if( $grue ==1 ){ ?> <td><input name="checkbox[]" type="checkbox" value="<?php echo $arrayDataOrderFinal[$i]['id_equipo']; ?>"></td> <?php } ?>
+				<td><?php echo $arrayDataOrderFinal[$i]['nombreEqui']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['JUG']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GAN']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['EMP']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['PER']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GAF']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['GEC']; ?></td>
+				<td><?php echo $arrayDataOrderFinal[$i]['DIF']; ?></td>
+				<td><strong><?php echo $arrayDataOrderFinal[$i]['PTS']; ?></strong></td>
+				<!--td><strong><?php echo !empty($arrayDataOrderFinal[$i]['ptsPenales'])?$arrayDataOrderFinal[$i]['ptsPenales']:''; ?></strong></td -->					
+			</tr>												 
+		<?php } 
+		} 
+		?>
+		</tbody>
+		</table>
+		</div>
+		<?php 
+}
 function calaculateTableGroup($idGrupo,$idFase,$idComp){
 	require '../conexion.php';
 	global $arrayDataOrder;
@@ -130,7 +199,8 @@ function calaculateTableGroup($idGrupo,$idFase,$idComp){
 	
 	//3. Realizar proceso de verificación para desempates:
 	for($i=0; $i<count($arrayData); $i++){
-		$matrizEmpateTemp = array();	
+		$matrizEmpateTemp = array();
+		$idsEquposEmpateTemp = array();
 		for($j=$i+1; $j<count($arrayData); $j++){		
 			if( $arrayData[$i]['PTS'] == $arrayData[$j]['PTS'] ){ //equipos empatados en i puntos
 				array_push($matrizEmpateTemp, $arrayData[$j]);
@@ -165,6 +235,7 @@ function calaculateTableGroup($idGrupo,$idFase,$idComp){
 			array_push($arrayDataOrderFinal,$arrayDataOrder[$i]);
 		}
 	}
+	//print_r($arrayDataOrderFinal);
 }
 function ordenarPorCriterios($idGrupo){
 	global $matrizEmpateTemp;
@@ -178,17 +249,24 @@ function ordenarPorCriterios($idGrupo){
 	//1.Por mayor número de puntos obtenidos entre los enfrentamientos directos de los equipos en cuestión.	
 	calcularPuntosDirectos( $idFase, $idGrupo,$idsEquposEmpateTemp );
 	$criterio = "ptsDirect"; $operador = "menor";
-	ordenarPorCriterio($criterio,$matrizEmpateTemp);	
+	ordenarPorCriterio($criterio,$matrizEmpateTemp);
 	if( $persisteEmpate ){
+		//desempate por ganador en penales.
 		$persisteEmpate = false;
-		calcularJuegoLimpio( $idComp );
-		//2.Quien presente el mejor promedio en el juego limpio.
-		$criterio = "ptsJl"; $operador = "mayor";
+		calcularPenales( $idFase, $idGrupo,$idsEquposEmpateTemp );		
+		$criterio = "ptsPenales"; $operador = "mayor";
 		ordenarPorCriterio($criterio,$matrizEmpateTemp);
-			}
+	}
 	if( $persisteEmpate ){
+		//2.Quien presente el mejor promedio en el juego limpio.
 		$persisteEmpate = false;
+		calcularJuegoLimpio( $idComp, $idFase );		
+		$criterio = "ptsJl"; $operador = "mayor";		
+		ordenarPorCriterio($criterio,$matrizEmpateTemp);
+	}	
+	if( $persisteEmpate ){
 		//3.Quién presente mayor puntaje en el gol diferencia.
+		$persisteEmpate = false;		
 		$criterio = "DIF"; $operador = "menor";
 		ordenarPorCriterio($criterio,$matrizEmpateTemp);
 	}
@@ -199,8 +277,8 @@ function ordenarPorCriterios($idGrupo){
 		ordenarPorCriterio($criterio,$matrizEmpateTemp);
 	}
 	if( $persisteEmpate ){
-		$persisteEmpate = false;
 		//5.Quién tenga menos goles en contra.
+		$persisteEmpate = false;		
 		$criterio = "GEC"; $operador = "mayor";
 		ordenarPorCriterio($criterio,$matrizEmpateTemp);
 	}
@@ -213,19 +291,30 @@ function calcularPuntosDirectos( $idFase, $idGrupo,$idsEquposEmpateTemp ){
 	for($i=0; $i<count($matrizEmpateTemp); $i++){
 		//--contar ganados
 		$totalPuntosG = mysqli_fetch_array( $connect->query( "select (count(1) * 3) total from juego where id_grupo = ".$idGrupo." and id_fase = ".$idFase." and (id_equipo_1 in(".$idsEquiposPorComa.") and id_equipo_2 in(".$idsEquiposPorComa.")) and (id_ganador = ".$matrizEmpateTemp[$i]['id_equipo'].")" ) );		
-		$totalPuntosE = mysqli_fetch_array( $connect->query( "select (count(1) * 1) total from juego where id_grupo = ".$idGrupo." and id_fase = ".$idFase." and (id_equipo_1 in(".$idsEquiposPorComa.") and id_equipo_2 in(".$idsEquiposPorComa.")) and (id_ganador = 0 and(id_equipo_1 =".$matrizEmpateTemp[$i]['id_equipo']." or id_equipo_2 = ".$matrizEmpateTemp[$i]['id_equipo']."))" ) );		
-		$matrizEmpateTemp[$i]['ptsDirect'] = ($totalPuntosG['total']+$totalPuntosE['total']);
+		$totalPuntosE = mysqli_fetch_array( $connect->query( "select (count(1) * 1) total from juego where id_grupo = ".$idGrupo." and id_fase = ".$idFase." and (id_equipo_1 in(".$idsEquiposPorComa.") and id_equipo_2 in(".$idsEquiposPorComa.")) and (id_ganador = 0 and(id_equipo_1 =".$matrizEmpateTemp[$i]['id_equipo']." or id_equipo_2 = ".$matrizEmpateTemp[$i]['id_equipo']."))" ) );
+		$matrizEmpateTemp[$i]['ptsDirect'] = ($totalPuntosG['total']+$totalPuntosE['total']);		
 	}	
 }
-function calcularJuegoLimpio( $idComp ){
+function calcularPenales( $idFase, $idGrupo,$idsEquposEmpateTemp ){
+	require '../conexion.php';
+	global $matrizEmpateTemp;
+	global $idsEquposEmpateTemp;
+	$idsEquiposPorComa = implode(",", $idsEquposEmpateTemp);
+	for($i=0; $i<count($matrizEmpateTemp); $i++){
+		//--contar ganados por penales
+		$totalPuntosPenales = mysqli_fetch_array( $connect->query( "select (count(1) * 3) total from juego where id_grupo = ".$idGrupo." and id_fase = ".$idFase." and (id_equipo_1 in(".$idsEquiposPorComa.") and id_equipo_2 in(".$idsEquiposPorComa.")) and (id_ganador_penales = ".$matrizEmpateTemp[$i]['id_equipo'].")" ) );		
+		$matrizEmpateTemp[$i]['ptsPenales'] = ($totalPuntosPenales['total']);
+	}
+}
+function calcularJuegoLimpio( $idComp, $idFase ){
 	require '../conexion.php';
 	global $matrizEmpateTemp;
 	global $matrizEmpateTemp;
 	for($i=0; $i<count($matrizEmpateTemp); $i++){
-		//--contar puntos juego limpio en la comeptencia del equipo
-		$totalPuntosJL = mysqli_fetch_array( $connect->query( "select COALESCE(SUM(ts.puntos),0) total from sancion s join juego j on s.id_juego = j.id and (j.id_equipo_1 =  ".$matrizEmpateTemp[$i]['id_equipo']." or j.id_equipo_2 = ".$matrizEmpateTemp[$i]['id_equipo'].") join fase f on j.id_fase = f.id join competicion c on f.id_competicion = c.id and c.id = ".$idComp." join tipo_sancion ts on s.id_tipo_sancion = ts.id join jugador jug on jug.id = s.id_jugador and jug.id_equipo =".$matrizEmpateTemp[$i]['id_equipo'] ) );
+		//--contar puntos juego limpio en la fase de la comeptencia del equipo
+		$totalPuntosJL = mysqli_fetch_array( $connect->query( "select COALESCE(SUM(ts.puntos),0) total from sancion s join juego j on s.id_juego = j.id and (j.id_equipo_1 =  ".$matrizEmpateTemp[$i]['id_equipo']." or j.id_equipo_2 = ".$matrizEmpateTemp[$i]['id_equipo'].") join fase f on j.id_fase = f.id and f.id = ".$idFase." join competicion c on f.id_competicion = c.id and c.id = ".$idComp." join tipo_sancion ts on s.id_tipo_sancion = ts.id join jugador jug on jug.id = s.id_jugador and jug.id_equipo =".$matrizEmpateTemp[$i]['id_equipo'] ) );
 		
-		$resultJuegos = mysqli_fetch_array($connect->query( "select count(1) juegos from juego j join equipo e on (j.id_equipo_1 = e.id or j.id_equipo_2 = e.id) and e.id = ".$matrizEmpateTemp[$i]['id_equipo']." and j.informado =1 join fase f on j.id_fase = f.id and f.id_competicion =".$idComp));
+		$resultJuegos = mysqli_fetch_array($connect->query( "select count(1) juegos from juego j join equipo e on (j.id_equipo_1 = e.id or j.id_equipo_2 = e.id) and e.id = ".$matrizEmpateTemp[$i]['id_equipo']." and j.informado =1 join fase f on j.id_fase = f.id and f.id = ".$idFase." and  f.id_competicion =".$idComp));
 		
 		//contar partidos jugados en la comeptencia del equipo
 		if( $resultJuegos['juegos']>0){
@@ -267,6 +356,8 @@ function ordenarPorCriterio( $criterio, $matrizEmpateTemp ){
 						$matrizEmpateTemp[$j] = $matrizEmpateTemp[$j+1];
 						$matrizEmpateTemp[$j+1] = $tmp;					
 					}else if ($matrizEmpateTemp[$j+1][$criterio] == $matrizEmpateTemp[$j][$criterio]){
+						//validar gaador por penales
+						
 						$persisteEmpate = true;
 					}
 				}

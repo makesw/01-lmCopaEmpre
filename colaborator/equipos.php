@@ -1,7 +1,11 @@
-e<?php
+<?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 //las del ultimo año:
@@ -96,11 +100,8 @@ $idComp=0;
 			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado Equipos</h3>						
-					</div>
 					<div class="panel-body">
-					<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-equi">Crear</button>-->
+					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-equi">Crear</button>
 								<div class="table-responsive">
 									<table class="table table-bordered table-hover dataTables-comp" >
 										<thead>
@@ -108,7 +109,7 @@ $idComp=0;
 												<th>#</th>
 												<th>Nombre</th>
 												<th>Color</th>
-												<th>Usuario Asignado</th>
+												<th>Usuario</th>
 												<th>Competición</th>
 												<th></th>
 												<!--th></th -->
@@ -134,17 +135,30 @@ $idComp=0;
 												<td>
 													<?php echo $row['competicion']; ?>
 												</td>					
-												<!-- td>
+												<!--td>
 												<a href="javaScript:editEqui(<?php echo $row['id']; ?>)">
 												<i class="fa fa-edit"></i>
 												</a>
 												<a title="Borrar" href="javaScript:delEqui('<?php echo $row['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>										
+												</a>												
 												</td -->
-												<td><a href="jugadores.php?idEqui=<?php echo $row['id']; ?>">
+												<!--td><a href="jugadores.php?idEqui=<?php echo $row['id']; ?>">
 													<button class="btn btn-success btn-outline" type="button">Jugadores</button>
 													</a>
+												</td -->
+												<td>
+													<div class="btn-group">
+													  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+														Acciones <span class="caret"></span>
+													  </button>
+													  <ul class="dropdown-menu">
+														<li><a href="javaScript:editEqui(<?php echo $row['id']; ?>)">Editar</a></li>	
+														 <li><a href="javaScript:viewPhoto('<?php echo $row['url_foto']; ?>');">Ver Foto</a></li>
+														  <li><a href="jugadores.php?idEqui=<?php echo $row['id']; ?>">Gestionar Jugadores</a></li>
+														  <!-- li><a href="javaScript:delEqui('<?php echo $row['id']; ?>');">Borrar</a></li -->
+													  </ul>
+												</div>
 												</td>	
 											</tr>
 											<?php $iter++; } ?>
@@ -212,7 +226,13 @@ $idComp=0;
 									?> 
 									</select>
 								 </div> 
-							</div>																					
+							</div>
+								<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="nombre">Foto</label> 
+								<div class="col-sm-10"> 
+									<input type="file" value="" class="upload-img" id="foto" name="foto" onchange="readURL(this);"/>
+								 </div> 
+							</div>																			
 							<div class="form-group"> 
 								<div class="col-sm-offset-2 col-sm-10"> 
 									<button type="submit" class="btn btn-primary">Guardar</button> 
@@ -228,6 +248,23 @@ $idComp=0;
 	<!-- /.modal-dialog -->
 </div>
 
+<div id="modal-viewPhoto" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Foto Equipo</h4>
+			</div>
+			<div class="modal-body">
+				<div class="login-avatar">
+					<img id="imgTeam" style="text-align: center;width: 40%;height: auto;" src="">
+				</div>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
 
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
@@ -288,8 +325,7 @@ function editEqui( id ) {
 				$("#nombre").val(data.nombre);
 				$("#color").val(data.color);
 				$("#cmbComp").val(data.id_competicion);
-				$("#cmbUser").val(data.id_usuario);
-								
+				$("#cmbUser").val(data.id_usuario);								
 				$('#modal-equi').modal('show');
 			},
 			error: function ( data ) {
@@ -322,6 +358,19 @@ function delEqui( id ) {
 function aMayusculas(obj,id){
     obj = obj.toUpperCase();
     document.getElementById(id).value = obj;
+}
+function readURL( input ) {
+	if ( input.files && input.files[ 0 ] ) {
+		var typeFile = input.files[ 0 ].type;
+		if( typeFile!="image/jpeg" && typeFile!="image/jpg" && typeFile!="image/png" ){
+			alert("Tipo de imagen inválido");
+			$("#foto").val('');
+		}
+	}
+}
+function viewPhoto( urlfoto ) { 
+	$("#imgTeam").attr("src",urlfoto);						
+	$('#modal-viewPhoto').modal('show');
 }
 </script>
 <?php $connect->close(); ?>

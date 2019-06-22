@@ -1,13 +1,21 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1 and (id_parent is null or id_parent =0 ) order by nombre asc" );
 $idComp=0;
 if(isset($_GET[ 'idComp' ])){
 	$idComp = $_GET[ 'idComp' ];
+}
+$idCompReload = 0;
+if(isset($_GET[ 'idCompReload' ])){
+	$idCompReload = $_GET[ 'idCompReload' ];
 }
 ?>
 <!DOCTYPE html>
@@ -113,8 +121,7 @@ if(isset($_GET[ 'idComp' ])){
 				</div>			
 				
 			</div>
-			</div>	
-			<h1 class="page-title">Sanciones</h1>		
+			</div>
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">
@@ -166,5 +173,10 @@ $(document).ready(function(){
 	 $("#divSancionesContent").load('ajaxSanciones.php?idComp='+$("#cmbComp").val());	  	
    })
 });	
+idCompReload=<?php echo($idCompReload); ?>;	
+if( idCompReload!= null && idCompReload!=0 ){
+	$("#divSancionesContent").load('ajaxSanciones.php?idComp='+idCompReload);
+	$("#cmbComp").val(idCompReload);
+}
 </script>
 <?php $connect->close(); ?>

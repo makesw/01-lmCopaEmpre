@@ -3,16 +3,14 @@ session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     header( 'Location: ../index.html' );
 }else{
-    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'admin'){
         header( 'Location: ../salir.php' );
     }
 }
 require '../conexion.php';
-$resultCompetencias = $connect->query( "select * from competicion WHERE activa=1 and (id_parent is null or id_parent=0) order by nombre asc" );
-$idComp=0;
-if(isset($_GET[ 'idComp' ])){
-	$idComp = $_GET[ 'idComp' ];
-}
+$resultJugadores = $connect->query( "select j.* from jugador j WHERE j.id_equipo=".$_GET[ 'idEqui' ]." and j.activo is null and j.documento
+NOT IN (select documento_jugador from jugador_vetado) ORDER BY nombres asc" );
+$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_GET[ 'idEqui' ] ));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,8 +43,6 @@ if(isset($_GET[ 'idComp' ])){
 	<!-- /mouldifi core stylesheet -->
 
 	<link href="../css/mouldifi-forms.css" rel="stylesheet">
-	<link href="../css/plugins/datatables/jquery.dataTables.css" rel="stylesheet">
-<link href="../js/plugins/datatables/extensions/Buttons/css/buttons.dataTables.css" rel="stylesheet">
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -96,42 +92,47 @@ if(isset($_GET[ 'idComp' ])){
 
 		<!-- Main content -->
 		<div class="main-content">
-			<form id="formJuegos">
-			<h1 class="page-title">Consultas / Juego Limpio</h1>
-			<div class="row">			
+			<h1 class="page-title">Administración / <a href="vetarJugadores.php">Equipos</a> / Vetar Jugadores</h1>
+			<div class="row">
+			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 				<div class="panel-heading clearfix">
-					<div class="panel-body">
-						  <div class="form-group">
-							<label for="emailaddress">Competición</label>
-							<select class="form-control" required id="cmbComp" name="cmbComp"> 
-								<option value="0">Seleccione una competencia</option><?php
-								while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
-									echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
-								}
-								?> 
-							</select>
-						  </div>				
+						<h3 class="panel-title">Listado Jugadores de Equipo: <?php echo $equipo[ 'nombre' ]; ?></h3>						
 					</div>
-				</div>			
-				
-			</div>
+					<div class="panel-body">				
+					<div class="table-responsive">
+						<table class="table table-striped table-bordered table-hover dataTables-players" id="tblPlayers">
+						<thead>
+							<tr>
+								<th>Documento</th>
+								<th>Nombre</th>
+								<th>Accciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php $iter = 1;
+							while($row = mysqli_fetch_array($resultJugadores)){
+							?>
+							<tr>
+								<td class="size-80"><?php echo $row['documento']; ?></td>	
+								<td><strong><?php echo $row['nombres'].' '.$row['apellidos']; ?></strong></td>								
+								<td class="size-80 text-center">
+									<button class="btn btn-danger btn-outline" type="button" onclick="javaScript:vetPlayer('<?php echo $row['documento']; ?>');">Vetar</button>												
+								</td>
+							</tr>
+							<?php $iter++; } ?>							
+						</tbody>
+					</table>
+				</div>		
+					</div>
 				</div>
-			<div class="row">			
-			<div class="col-lg-12">
-				<div class="class="panel panel-minimal"t">
-					<div class="panel-body">
-						<div id="divJLContent"></div>						
-					</div>
-				</div>			
-				
 			</div>
-			</div>		
+
+			</div>
 			<!-- Footer -->
 			<?php include("./footer.html");?>
 			<!-- /footer -->
-			</form>
 		</div>
 		<!-- /main content -->
 
@@ -139,7 +140,42 @@ if(isset($_GET[ 'idComp' ])){
 	<!-- /main container -->
 
 </div>
-<!-- /page container -->	
+<!-- /page container -->
+
+<div id="modal-jug" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Vetar Jugador</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" id="formVetarJug" method="post">
+				
+					<div class="form-group"> 
+						<label class="col-sm-2 control-label" for="motivo">Motivo</label> 
+						<div class="col-sm-10"> 
+							<textarea cols="30" rows="3" required="required" name="motivo" id="motivo"></textarea>
+						 </div> 
+					</div>
+					
+					<div class="alert alert-danger" role="alert" hidden="true" id="div-msg-fail"></div>
+					<div class="form-group"> 
+						<div class="col-sm-offset-2 col-sm-10"> 
+							<button type="submit" class="btn btn-primary">Vetar</button> 
+						</div> 
+					</div> 
+					<input type="hidden" id="bthDocVetPlayer" name="bthDocVetPlayer" value="0" />
+					<input type="hidden" id="bthValEqui" name="bthValEqui" value="<?php echo $equipo[ 'id']; ?>" />
+				</form>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+
+
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
 <script src="../js/bootstrap.min.js"></script>
@@ -156,18 +192,49 @@ if(isset($_GET[ 'idComp' ])){
 <script src="../js/plugins/datatables/vfs_fonts.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.html5.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.colVis.js"></script>
-<script src="../js/plugins/datatables/extensions/Buttons/js/dataTables.buttons.min.js"></script>
-<script src="../js/plugins/datatables/jszip.min.js"></script>
-<script src="../js/plugins/datatables/pdfmake.min.js"></script>
-<script src="../js/plugins/datatables/vfs_fonts.js"></script>
 </body>
 </html>
 <script>
-idComp=<?php echo($idComp); ?>;
-$(document).ready(function(){
-   $("#cmbComp").change(function () {
-	 $("#divJLContent").load('ajaxJuegoLimpio.php?idComp='+$("#cmbComp").val());	  	
-   })
-});	
+$(document).ready(function () {
+var table =$('.dataTables-players').DataTable({
+	"bLengthChange": false,
+	"bInfo": false,
+	"pageLength": 10,
+	"searching": true,
+	"bSort" : false
+});
+});
+
+jQuery( document ).on( 'submit', '#formVetarJug', function ( event ) {
+	$.ajax( {
+		url: 'server.php?action=vetarJug',
+		type: 'POST',
+		data: new FormData( this ),
+		success: function ( data ) {
+			//console.log( data );
+			if( data.error ){
+				$('#div-msg-fail').text(data.description);			
+				$('#div-msg-fail').show();
+				setTimeout(function(){
+					$('#div-msg-fail').hide();
+				},4000);
+			}else{
+				location.href = './jugadoresVetar.php?idEqui=<?php echo $equipo[ 'id'];?>';
+			}	
+		},
+		error: function ( data ) {
+			console.log( data );
+		},
+		cache: false,
+		contentType: false,
+		processData: false
+	} );
+	return false;
+} );
+function vetPlayer( documento ) {
+	$("#bthDocVetPlayer").val(documento);
+	$('#modal-jug').modal('show');
+}
+
 </script>
 <?php $connect->close(); ?>

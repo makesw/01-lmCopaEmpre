@@ -1,12 +1,18 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 require '../conexion.php';
 //las del ultimo año:
 $resultCompetencias = $connect->query( "select * from competicion WHERE  now() <= ADDDATE(DATE(fecha_creacion), interval 1  YEAR) order by fecha_creacion desc,nombre asc" );
-$resultCompetenciasParent = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,11 +99,8 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado Competiciones</h3>						
-					</div>
 					<div class="panel-body">
-					<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-comp">Crear</button>-->
+					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-comp">Crear</button>
 								<div class="table-responsive">
 									<table class="table table-bordered table-hover dataTables-comp" >
 										<thead>
@@ -105,26 +108,19 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 												<th>#</th>
 												<th>Código</th>
 												<th>Nombre</th>
-												<th>Activa</th>
-												<th>Inscripciones</th>
-												<th>Puntos Ganador</th>
-												<th>Puntos Perdedor</th>
-												<th>Puntos Empate</th>
-												<th>Fecha Creación</th>
-												<th>Comp. Padre</th>
-												<th>Valor</th>
-												<!--th></th -->
+												<th># Jug. x Equipo</th>
+												<th>Fech. Max. Mod. Planilla</th>
+												<th>Valor Inscripción</th>
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
 											<?php $iter = 1;
 											while($row = mysqli_fetch_array($resultCompetencias)){
-												$date_c = new DateTime($row["fecha_creacion"]);
-												$nombreParent = "";
-												if(!empty($row['id_parent'])){
-													$comParent =  mysqli_fetch_array($connect->query( "select nombre nombreParent from competicion WHERE activa=1 and id = ".$row['id_parent'] ));
-													$nombreParent = $comParent['nombreParent'];
-												}
+											    $date_aux = null;
+											    if(!empty($row["fech_max_pla"])){
+											        $date_aux = new DateTime($row["fech_max_pla"]);
+											    }
 											?>
 											<tr>
 												<td>
@@ -137,37 +133,19 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 													<?php echo $row['nombre']; ?>
 												</td>
 												<td>
-													<?php echo $row['activa']==1?'SI':'NO'; ?>
+													<?php echo $row['nummxjug']; ?>
 												</td>
 												<td>
-													<?php echo $row['habilitar_inscripciones']==1?'SI':'NO'; ?>
-												</td>
-												<td>
-													<?php echo $row['puntos_ganador']; ?>
-												</td>
-												<td>
-													<?php echo $row['puntos_perdedor']; ?>
-												</td>
-												<td>
-													<?php echo $row['puntos_empate']; ?>
-												</td>
-												<td>
-													<?php echo $date_c->format('d-m-Y'); ?>
-												</td>
-												<td>
-													<?php echo $nombreParent; ?>
-												</td>
+													<?php if(!empty($date_aux)){echo $date_aux->format('d-m-Y');} ?>
+												</td>														
 												<td>
 													<?php echo $row['valor']; ?>
 												</td>
-												<!--td>
-												<a href="javaScript:editComp(<?php echo $row['id']; ?>)">
-												<i class="fa fa-edit"></i>
-												</a>
-												<a title="Borrar" href="javaScript:delComp('<?php echo $row['id']; ?>');">
-												<i class="icon-cancel icon-larger red-color"></i>
-												</a>											
-												</td -->
+												<td>
+												<a title="Borrar" href="javaScript:verDetalleComp('<?php echo $row['id']; ?>');">
+													<button class="btn btn-link" type="button">Más Detalle</button>			
+												</a>									
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>
@@ -202,7 +180,7 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 						 	<div class="form-group"> 
 								<label class="col-sm-2 control-label" for="nombre">Nombre</label> 
 								<div class="col-sm-10"> 
-									<input type="text" placeholder="Nombre" id="nombre" name="nombre" class="form-control">
+									<input type="text" onblur="javascript:aMayusculas(this.value,this.id);" placeholder="Nombre" id="nombre" name="nombre" class="form-control">
 								 </div> 
 							</div> 
 							<div class="form-group"> 
@@ -217,18 +195,6 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 									<input type="checkbox" id="inscripcion" name="inscripcion">
 								 </div> 
 							</div>
-							<div class="form-group"> 
-								<label class="col-sm-2 control-label" for="nombre">Competición Padre</label> 
-								<div class="col-sm-10"> 
-									<select class="form-control" id="cmbComp" name="cmbComp"> 
-										<option value="-1">Seleccione una competencia</option><?php
-										while ( $row = mysqli_fetch_array( $resultCompetenciasParent ) ) {
-											echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
-										}
-										?> 
-									</select>
-								 </div> 
-							</div> 
 							<div class="form-group"> 
 								<label class="col-sm-2 control-label" for="puntosp">Puntos Ganador</label> 
 								<div class="col-sm-10">
@@ -248,11 +214,23 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 								 </div> 
 							</div>
 							<div class="form-group"> 
-								<label class="col-sm-2 control-label" for="puntosp">Valor $</label> 
+								<label class="col-sm-2 control-label" for="puntosp" title="Valor Iscripción Competencia">$ Valor</label> 
 								<div class="col-sm-10">
 									<input type="text" placeholder="Valor" value="0" id="valor" name="valor" class="form-control">
 								 </div> 
-							</div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="maxJug"># Max. Jugadores</label> 
+								<div class="col-sm-10">
+									<input type="number" placeholder="# Max. Jugadores x equipo" id="maxJug" name="maxJug" class="form-control" min="0" max="100">
+								 </div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="maxFech">Fecha Max. Modif. Planilla</label> 
+								<div class="col-sm-10">
+									<input type="date" name="fechaMax" id="fechaMax" required>
+								 </div>
+							</div>  
 							<div class="form-group"> 
 								<div class="col-sm-offset-2 col-sm-10"> 
 									<button type="submit" class="btn btn-primary">Guardar</button> 
@@ -268,6 +246,58 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 	<!-- /.modal-dialog -->
 </div>
 
+<div id="modal-comp-det" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Detalle Competición</h4>
+			</div>
+			<div class="modal-body">
+						 <form class="form-horizontal" id="a" method="post"> 	
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="activaDet">Activa</label> 
+								<div class="col-sm-10">
+									<input type="checkbox" id="activaDet" name="activaDet" disabled="disabled">
+								 </div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="inscripcionDet">Inscripción Activa</label> 
+								<div class="col-sm-10">
+									<input type="checkbox" id="inscripcionDet" name="inscripcionDet" disabled="disabled">
+								 </div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="puntosgDet">Puntos Ganador</label> 
+								<div class="col-sm-10">
+									<input type="text" placeholder="Puntos Ganador" value="3" id="puntosgDet" name="puntosgDet" class="form-control" disabled>
+								 </div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="puntospDet">Puntos Perdedor</label> 
+								<div class="col-sm-10">
+									<input type="text" placeholder="Puntos Ganador" value="3" id="puntospDet" name="puntospDet" class="form-control" disabled>
+								 </div> 
+							</div> 
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="puntoseDet">Puntos Empate</label> 
+								<div class="col-sm-10">
+									<input type="text" placeholder="Puntos Ganador" value="3" id="puntoseDet" name="puntoseDet" class="form-control" disabled>
+								 </div> 
+							</div>
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="feCreacionDet">Fecha Creación</label> 
+								<div class="col-sm-10">
+									<input type="text"  id="feCreacionDet" name="feCreacionDet" class="form-control">
+								 </div> 
+							</div>
+						</form>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
 
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
@@ -290,7 +320,7 @@ $resultCompetenciasParent = $connect->query( "select * from competicion WHERE ac
 <script>
 $(document).ready(function () {
 $('.dataTables-comp').DataTable({
-	"searching": false,
+	"searching": true,
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 5
@@ -329,6 +359,17 @@ function editComp( id ) {
 				$("#puntosp").val(data.puntos_perdedor);
 				$("#puntose").val(data.puntos_empate);
 				$("#valor").val(data.valor);
+				$("#maxJug").val(data.nummxjug);
+				var formatFecha;
+				if(data.fech_max_pla!=null){
+					var fechaMax = new Date(data.fech_max_pla);
+					var mes = ''+fechaMax.getMonth(); 
+					if(mes<10){mes='0'+(fechaMax.getMonth()+1);}else{mes=''+(fechaMax.getMonth()+1);}
+					var dia = ''+fechaMax.getDate(); 
+					if(dia<10){dia='0'+fechaMax.getDate();}else{dia=''+(fechaMax.getDate());}
+					formatFecha = fechaMax.getFullYear()+'-'+mes+'-'+dia;
+				}
+				$("#fechaMax").val(formatFecha);
 				if(data.activa == 1){
 					$("#activa").prop("checked", true);
 				}else{
@@ -346,6 +387,45 @@ function editComp( id ) {
 				}
 				
 				$('#modal-comp').modal('show');
+			},
+			error: function ( data ) {
+				//console.log( data );
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		} );
+}
+function verDetalleComp( id ) {
+	$.ajax( {
+			url: 'server.php?action=getDataComp&id=' + id,
+			type: 'POST',
+			data: new FormData( this ),
+			success: function ( data ) {
+				//console.log(data);
+				$("#nombreDet").val(data.nombre);
+				$("#puntosgDet").val(data.puntos_ganador);
+				$("#puntospDet").val(data.puntos_perdedor);
+				$("#puntoseDet").val(data.puntos_empate);
+				$("#maxJugDet").val(data.nummxjug);
+				$("#feCreacionDet").val(data.fecha_creacion);
+				if(data.activa == 1){
+					$("#activaDet").prop("checked", true);
+				}else{
+					$("#activaDet").prop("checked", false);
+				}
+				if(data.habilitar_inscripciones == 1){
+					$("#inscripcionDet").prop("checked", true);
+				}else{
+					$("#inscripcionDet").prop("checked", false);
+				}
+				if(data.id_parent != null){
+					$("#cmbCompDet").val(data.id_parent);
+				}else{
+					$("#cmbCompDet").val(-1);
+				}
+				
+				$('#modal-comp-det').modal('show');
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -373,6 +453,10 @@ function delComp( id ) {
 			processData: false
 		} );
 	}
+}
+function aMayusculas(obj,id){
+    obj = obj.toUpperCase();
+    document.getElementById(id).value = obj;
 }
 </script>
 <?php $connect->close(); ?>

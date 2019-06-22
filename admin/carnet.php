@@ -11,7 +11,7 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
 	header( 'Location: ../index.html' );
 }
 require '../conexion.php';
-$resultJugadores = $connect->query( "select j.id, j.documento, concat(j.nombres,'',j.apellidos) nombreJugador, numero, j.url_foto, e.nombre equipo, c.nombre competicion from jugador j join equipo e on j.id_equipo = e.id join inscripcion i on i.id_equipo = e.id join competicion c on i.id_competicion = c.id and c.activa =1 order by nombreJugador asc" );
+$resultJugadores = $connect->query( "select distinct j.id, j.documento, concat(j.nombres,'',j.apellidos) nombreJugador, numero, j.url_foto, e.nombre equipo, c.nombre competicion from jugador j join equipo e on j.id_equipo = e.id join inscripcion i on i.id_equipo = e.id join competicion c on i.id_competicion = c.id and c.activa =1 order by nombreJugador asc" );
 ?>
 <!DOCTYPE html>
 <html lang="en">

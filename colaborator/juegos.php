@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -105,10 +109,7 @@ header('Pragma: no-cache');
 			<h1 class="page-title">Administración / Juegos</h1>
 			<div class="row">			
 			<div class="col-lg-12">
-				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Juegos</h3>						
-					</div>
+				<div class="panel panel-default">				
 					<div class="panel-body">
 						  <div class="form-group">
 							<label for="emailaddress">Competición</label>
@@ -134,8 +135,7 @@ header('Pragma: no-cache');
 				</div>			
 				
 			</div>
-			</div>	
-			<h1 class="page-title">Juegos</h1>		
+			</div>
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">
@@ -190,7 +190,7 @@ header('Pragma: no-cache');
 					<div class="form-group"> 
 						<label class="col-sm-2 control-label" for="nombre">Minuto Inicio</label> 
 						<div class="col-sm-10"> 
-							<input type="text" class="form-control" name="minInicio" required id="minInicio" size="2" maxlength="2"> 
+							<input type="number" class="form-control" name="minInicio" required id="minInicio" size="2" maxlength="2"> 
 						 </div> 
 					</div>
 					<div class="form-group"> 
@@ -225,7 +225,7 @@ header('Pragma: no-cache');
 					<div class="form-group"> 
 						<label class="col-sm-2 control-label" for="nombre">Minuto Fin</label> 
 						<div class="col-sm-10"> 
-							<input type="text" class="form-control" name="minFin" required id="minFin" size="2" maxlength="2"> 
+							<input type="number" class="form-control" name="minFin" required id="minFin" size="2" maxlength="2"> 
 						 </div> 
 					</div>
 					<div class="form-group"> 
@@ -535,21 +535,25 @@ function fnAddJuego() {
 		$('#modal-agregar').modal('show');	
 	}	
 }
-jQuery( document ).on( 'submit', '#formAddGame', function ( event ) {		
-	$.ajax({
-			type: "POST",
-			url: "server.php?action=addManualGame",
-			data:{ array : JSON.stringify(arrSelectedTeam) },
-			dataType: "json",
-			success: function (data) {
-				//console.log(data);
-				arrSelectedTeam=[];
-				location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
-			},
-			error: function (data) {
-				//console.log(data);
-			},
-		});		
+jQuery( document ).on( 'submit', '#formAddGame', function ( event ) {
+	if(arrSelectedTeam.length == 2){
+		$.ajax({
+				type: "POST",
+				url: "server.php?action=addManualGame",
+				data:{ array : JSON.stringify(arrSelectedTeam) },
+				dataType: "json",
+				success: function (data) {
+					//console.log(data);
+					arrSelectedTeam=[];
+					location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
+				},
+				error: function (data) {
+					//console.log(data);
+				},
+			});		
+	}else{
+		alert('Por favor seleccione solo 2 equipos.')
+	}
 	return false;
 } );
 function delGame( id ) {
@@ -575,6 +579,25 @@ function delGame( id ) {
 			processData: false
 		} );
 	}
-}	
+}
+function fnAplazar( idJuego ) {
+	if ( confirm( 'Confirma Aplazar el Juego?' ) ) {
+		$.ajax( {
+			url: 'server.php?action=aplazarGame&id=' + idJuego,
+			type: 'POST',
+			data: new FormData( this ),
+			success: function ( data ) {
+				//console.log( data );
+				location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
+			},
+			error: function ( data ) {
+				//console.log( data );
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		} );
+	}
+}
 </script>
 <?php $connect->close(); ?>

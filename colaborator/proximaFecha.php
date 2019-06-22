@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -89,19 +93,15 @@ header('Content-Type: text/html; charset=utf-8');
 		<!-- Main content -->
 		<div class="main-content">
 			<form id="formJuegos">
-			<h1 class="page-title">Consultas / Próxima Fecha</h1>
+			<h1 class="page-title">Administración / Próxima Fecha</h1>
 			<div class="row">			
 			<div class="col-lg-12">
-				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Proximos Juegos</h3>						
-					</div>
+				<div class="panel panel-default">				
 					<div class="panel-body">
 						  <div class="form-group">
 							<label for="emailaddress">Competición</label>
 							<select class="form-control" required id="cmbComp" name="cmbComp"> 
 								<option value="0">Seleccione...</option>
-								<option value="-1">AMISTOSOS</option>
 								<?php
 								while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
 									echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
@@ -113,8 +113,7 @@ header('Content-Type: text/html; charset=utf-8');
 				</div>			
 				
 			</div>
-			</div>	
-			<h1 class="page-title">Juegos</h1>		
+			</div>
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">

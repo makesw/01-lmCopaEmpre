@@ -1,10 +1,19 @@
-<?php 
+<?php
+session_start();
+if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
+}
 require '../conexion.php';
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
 setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');
 //Consutar equipos de la competiciòn:
 $resultEquipoPuntos = $connect->query( "select e.id, e.nombre, sum(ts.puntos) pstJL from juego j join fase f on j.id_fase = f.id and f.id_competicion = ".$idComp." join sancion s on j.id = s.id_juego join tipo_sancion ts on s.id_tipo_sancion = ts.id join jugador ju on s.id_jugador = ju.id join equipo e on ju.id_equipo = e.id group by e.id order by pstJL desc");
+
 //generar arreglo EquipoPuntos:
 $arrayData = array();
 while($row = mysqli_fetch_array($resultEquipoPuntos)){
@@ -50,7 +59,7 @@ function ordenarArrayData( $arrayData ){
 </thead>
 <tbody>
 <?php
-for($i=0; $i<count($arrayData); $i++){	
+for($i=0; $i<count($arrayData); $i++){
 ?>	
 <tr style="<?php if($i == 0 ){echo "background-color: #bbebba;"; } ?>">		
 	<td> <?php echo $arrayData[$i]['nombreEquipo']; ?>	</td>
@@ -70,6 +79,9 @@ $('.dataTables-JL').DataTable({
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 },
 	dom: '<"html5buttons" B>lTfgitp',
 		buttons: [				
 			{

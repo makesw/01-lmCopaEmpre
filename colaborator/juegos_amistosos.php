@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -135,12 +139,22 @@ header('Pragma: no-cache');
 				<form id="formAddGame" method="post">
 					  <div class="form-group">
 						<label for="nombre1">Nombre Equipo 1</label>
-						<input type="text" name="nombre1" required class="form-control" id="emailaddress" placeholder="Nombre Equipo 1">
+						<input type="text" onblur="javascript:aMayusculas(this.value,this.id);" id="teama" name="nombre1" required class="form-control" id="emailaddress" placeholder="Nombre Equipo 1">
 					  </div>
 					  <div class="form-group">
 						<label for="nombre2">Nombre Equipo 2</label>
-						<input type="text" name="nombre2" required class="form-control" id="emailaddress" placeholder="Nombre Equipo 2">
+						<input type="text" name="nombre2" id="teamb" onblur="javascript:aMayusculas(this.value,this.id);" required class="form-control" id="emailaddress" placeholder="Nombre Equipo 2">
 					  </div>
+					  <div class="form-group">
+							<label for="emailaddress">Competición</label>
+							<select class="form-control" required id="cmbComp" name="cmbComp"> 
+								<option value="">Seleccione una competencia</option><?php
+								while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
+									echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
+								}
+								?> 
+							</select>
+						  </div>	
 					  <button type="submit" class="btn btn-primary">Guardar</button>
 				</form>
 			</div>
@@ -381,7 +395,7 @@ function fnClearProg( idJuego ) {
 			data: new FormData( this ),
 			success: function ( data ) {
 				//console.log( data );
-				//location.href = './juegos_amistosos.php';
+				location.href = './juegos_amistosos.php';
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -425,6 +439,29 @@ function delGame( id ) {
 					$('#textAlert').text(data.description);
 					$('#modal-alert').modal('show');	
 				}
+			},
+			error: function ( data ) {
+				//console.log( data );
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		} );
+	}
+}
+function aMayusculas(obj,id){
+    obj = obj.toUpperCase();
+    document.getElementById(id).value = obj;
+}
+function fnAplazar( idJuego ) {
+	if ( confirm( 'Confirma Aplazar el Juego?' ) ) {
+		$.ajax( {
+			url: 'server.php?action=aplazarGame&id=' + idJuego,
+			type: 'POST',
+			data: new FormData( this ),
+			success: function ( data ) {
+				//console.log( data );
+				location.href = './juegos_amistosos.php';
 			},
 			error: function ( data ) {
 				//console.log( data );

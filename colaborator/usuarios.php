@@ -1,10 +1,14 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
-$resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN usuario_perfil up ON u.id = up.id_usuario  AND u.usuario_creador<>'system' ORDER BY nombres asc" );
+$resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN usuario_perfil up ON u.id = up.id_usuario ORDER BY nombres asc" );
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,14 +91,26 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 			<div class="row">
 			
 			<div class="col-lg-12">
-				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado de Usuarios</h3>						
+				<div class="panel-heading clearfix">					
 					</div>
 					<div class="panel-body">
-					<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-crear">Crear</button>-->
+					<button type="button" class="btn btn-primary" onclick="javaScript:createUser();">Crear</button>
 					<div class="table-responsive">
-					<table class="table table-users table-bordered table-hover">
+					<table class="table table-users table-bordered table-hover dataTables-usuarios">
+						<thead>
+							<tr>
+								<th></th>
+								<th>Foto</th>
+								<th>Documento</th>
+								<th>Nombre</th>
+								<th>Teléfono</th>
+								<th>Correo</th>
+								<th>Contraseña</th>
+								<th>Rol</th>
+								<th>Estado</th>
+								<th></th>
+							</tr>
+						</thead>
 						<tbody>
 							<?php $iter = 1;
 							while($row = mysqli_fetch_array($resultUsuarios)){
@@ -102,28 +118,27 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 							<tr>
 								<td class="size-80"><?php echo $iter; ?></td>
 								<td class="size-80"><img title="" alt="" src="<?php echo $row['url_foto'];?>" class="avatar img-circle"></td>
-								<td><strong><?php echo $row['nombres'].' '.$row['apellidos']; ?></strong></td>
-								<td><?php echo $row['telefono'];?></td>
+								<td class="size-80"><?php echo $row['documento']; ?></td>
+								<td><strong><?php echo $row['nombres'].' '.$row['apellidos']; ?></strong></td>								
 								<td class="text-center"><?php echo $row['telefono'];?></td>
 								<td class="text-center"><?php echo $row['correo'];?></td>
 								<td class="text-center"><?php echo $row['password'];?></td>				
 								<td class="text-center"><?php echo $row['perfil'];?></td>
 								<td class="text-center"><?php echo $row['activo']?'Activo':'Inactivo';?></td>	
-								<!--td class="size-80 text-center">
-									<a href="javaScript:editUser(<?php echo $row['id']; ?>)">
+								<td class="size-80 text-center">
+									<!-- a href="javaScript:editUser(<?php echo $row['id']; ?>)">
 									<i class="fa fa-edit"></i>
-									</a>
-									<a title="Borrar" href="javaScript:delUser('<?php echo $row['id']; ?>');">
+									</a -->
+									<!--  a title="Borrar" href="javaScript:delUser('<?php echo $row['id']; ?>');">
 									<i class="icon-cancel icon-larger red-color"></i>
-									</a>												
-								</td -->
+									</a -->												
+								</td>
 							</tr>
 							<?php $iter++; } ?>							
 						</tbody>
 					</table>
 				</div>			
 					</div>
-				</div>
 			</div>
 
 			</div>
@@ -147,7 +162,13 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 				<h4 class="modal-title">Usuario</h4>
 			</div>
 			<div class="modal-body">
-				<form class="form-horizontal" id="formCreate" method="post"> 
+				<form class="form-horizontal" id="formCreate" method="post">
+							<div class="form-group"> 
+								<label class="col-sm-2 control-label" for="nombre">Documento</label> 
+								<div class="col-sm-10"> 
+									<input type="text" placeholder="documento" required id="documento" name="documento" class="form-control" maxlength="15">
+								 </div> 
+							</div> 
 						 	<div class="form-group"> 
 								<label class="col-sm-2 control-label" for="nombre">Nombres</label> 
 								<div class="col-sm-10"> 
@@ -175,7 +196,7 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 							<div class="form-group"> 
 								<label class="col-sm-2 control-label" for="nombre">Contraseña</label> 
 								<div class="col-sm-10"> 
-									<input type="password" placeholder="password" required id="password" name="password" class="form-control">
+									<input type="text" placeholder="constraseña" required id="password" name="password" class="form-control" value="javaScript:randomPassword();">
 								 </div> 
 							</div>
 							<div class="form-group">
@@ -201,6 +222,7 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 									<input type="file" value="" class="upload-img" id="foto" name="foto" onchange="readURL(this);"/>
 								 </div> 
 							</div>
+							<div class="alert alert-danger" role="alert" hidden="true" id="div-msg-fail"></div>
 							<div class="form-group"> 
 								<div class="col-sm-offset-2 col-sm-10"> 
 									<button type="submit" class="btn btn-primary">Guardar</button> 
@@ -237,11 +259,11 @@ $resultUsuarios = $connect->query( "select u.*, up.perfil from usuario u JOIN us
 </html>
 <script>
 $(document).ready(function () {
-$('.dataTables-comp').DataTable({
-	"searching": false,
+$('.dataTables-usuarios').DataTable({
+	"searching": true,
 	"bLengthChange": false,
 	"bInfo": false,
-	"pageLength": 5
+	"pageLength": 20
 });
 });
 	
@@ -252,7 +274,15 @@ jQuery( document ).on( 'submit', '#formCreate', function ( event ) {
 		data: new FormData( this ),
 		success: function ( data ) {
 			//console.log( data );
-			location.href = './usuarios.php';
+			if( data.error ){
+				$('#div-msg-fail').text(data.description);			
+				$('#div-msg-fail').show();
+				setTimeout(function(){
+					$('#div-msg-fail').hide();
+				},4000);
+			}else{
+				location.href = './usuarios.php';
+			}			
 		},
 		error: function ( data ) {
 			//console.log( data );
@@ -263,6 +293,22 @@ jQuery( document ).on( 'submit', '#formCreate', function ( event ) {
 	} );
 	return false;
 } );
+
+function createUser(){
+	$("#bthAction").val(1);
+	$("#bthValId").val('');
+	$("#documento").val('');
+	$("#nombres").val('');
+	$("#apellidos").val('');
+	$("#telefono").val('');
+	$("#correo").val('');
+	$("#password").val(randomPassword());
+	$("#cmbPerfil").val('');
+	$("#activo").prop("checked", false);
+				
+	$('#modal-crear').modal('show');
+}
+
 function editUser( id ) {
 	$.ajax( {
 			url: 'server.php?action=getDataUser&id=' + id,
@@ -272,6 +318,7 @@ function editUser( id ) {
 				//console.log(data);
 				$("#bthAction").val(2);
 				$("#bthValId").val(data.id);
+				$("#documento").val(data.documento);
 				$("#nombres").val(data.nombres);
 				$("#apellidos").val(data.apellidos);
 				$("#telefono").val(data.telefono);
@@ -286,7 +333,7 @@ function editUser( id ) {
 				$('#modal-crear').modal('show');
 			},
 			error: function ( data ) {
-				//console.log( data );
+				console.log( data );
 			},
 			cache: false,
 			contentType: false,
@@ -321,5 +368,9 @@ function readURL( input ) {
 		}
 	}
 }
+function randomPassword(){
+	return randomstring = Math.random().toString(36).slice(-8);
+}
+
 </script>
 <?php $connect->close(); ?>

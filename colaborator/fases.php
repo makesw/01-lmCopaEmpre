@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -92,11 +96,8 @@ $resultFases = $connect->query( "select f.*,c.nombre nombreCompeticion from fase
 			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-						<h3 class="panel-title">Listado Fases</h3>						
-					</div>
 					<div class="panel-body">
-					<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-fase">Crear</button>
+					<!-- button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-fase">Crear</button -->
 								<div class="table-responsive">
 									<table class="table table-bordered table-hover dataTables-comp" >
 										<thead>
@@ -104,8 +105,8 @@ $resultFases = $connect->query( "select f.*,c.nombre nombreCompeticion from fase
 												<th>Orden</th>
 												<th>Nombre</th>
 												<th>Activa</th>
-												<th>Competición</th>									
-												<!--th></th-->
+												<th>Competición</th>												
+												<th></th>
 											</tr>
 										</thead>
 										<tbody>
@@ -124,14 +125,14 @@ $resultFases = $connect->query( "select f.*,c.nombre nombreCompeticion from fase
 												<td>
 													<?php echo $row['nombreCompeticion']; ?>
 												</td>	
-												<!--td>
-												<a href="javaScript:editFase(<?php echo $row['id']; ?>)">
+												<td>
+												<!-- a href="javaScript:editFase(<?php echo $row['id']; ?>)">
 												<i class="fa fa-edit"></i>
-												</a>
-												<a title="Borrar" href="javaScript:delFase('<?php echo $row['id']; ?>');">
+												</a -->
+												<!-- a title="Borrar" href="javaScript:delFase('<?php echo $row['id']; ?>');">
 												<i class="icon-cancel icon-larger red-color"></i>
-												</a>												
-												</td -->
+												</a -->												
+												</td>
 											</tr>
 											<?php $iter++; } ?>
 										</tbody>

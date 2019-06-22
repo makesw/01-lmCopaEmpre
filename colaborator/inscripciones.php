@@ -1,12 +1,18 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
-$idComp=0;
-$resultInscripciones = $connect->query( "select i.*,e.nombre nombreEquipo, e.color, c.nombre nombreCompeticion from inscripcion i JOIN competicion c ON i.id_competicion = c.id JOIN equipo e ON i.id_equipo =e.id" );
+$idCompRld=0;
+if(isset($_GET[ 'idComp' ])){
+	$idCompRld = $_GET[ 'idComp' ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -93,7 +99,7 @@ $resultInscripciones = $connect->query( "select i.*,e.nombre nombreEquipo, e.col
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 					<div class="panel-body">
-					  	<div class="form-group"> 
+					  <div class="form-group"> 
 							<label class="col-sm-2 control-label" for="nombre">Competición</label> 
 							<div class="col-sm-10"> 
 								<select class="form-control" required id="cmbComp" name="cmbComp"> 
@@ -104,58 +110,22 @@ $resultInscripciones = $connect->query( "select i.*,e.nombre nombreEquipo, e.col
 									?> 
 								</select>
 							 </div> 
-						</div> 							
-						<div class="form-group">
-							<!--<button type="button" class="btn btn-primary" onClick="javascript:fnInscribir();">Inscribir Equipo</button> -->
-							<div class="table-responsive">
-								<table class="table table-bordered table-hover dataTables-equipos" >
-									<thead>
-										<tr>
-											<th>#</th>
-											<th>Nombre</th>
-											<th>Color</th>
-											<th>Competición</th>
-											<!--<th></th>-->
-										</tr>
-									</thead>
-									<tbody>
-										<?php $iter = 1;
-										while($row = mysqli_fetch_array($resultInscripciones)){
-										?>
-										<tr>
-											<td>
-												<?php echo $iter; ?>
-											</td>
-											<td>
-												<?php echo $row['nombreEquipo']; ?>
-											</td>
-											<td>
-												<div style="text-align: center;width: 50%;background-color:<?php echo $row['color']; ?>; height: 15px;"></div>
-											</td>
-											<td>
-												<?php echo $row['nombreCompeticion']; ?>
-											</td>																	
-											<!--<td>												
-												<a title="Borrar" href="javaScript:delInscrip('<?php echo $row['id']; ?>');">
-													<i class="icon-cancel icon-larger red-color"></i>
-												</a>											
-											</td>-->												
-										</tr>
-										<?php $iter++; } ?>
-									</tbody>
-								</table>
-							</div>
-						  </div>					
+						</div> 																		
+					</div>
+				</div>			
+				<!-- button type="button" class="btn btn-primary" onClick="javascript:fnInscribir();">Inscribir Equipo</button -->
+			</div>
+			</div>		
+			<div class="row">			
+			<div class="col-lg-12">
+				<div class="class="panel panel-minimal"t">
+					<div class="panel-body">
+						<div id="divTeamInscritos"></div>						
 					</div>
 				</div>			
 				
 			</div>
-			</div>	
-			<h1 class="page-title">Grupos</h1>		
-			<div class="row">
-				<div id="divGroupContent">
-				</div>
-			</div>			
+			</div>
 			<!-- Footer -->
 			<?php include("./footer.html");?>
 			<!-- /footer -->
@@ -182,6 +152,7 @@ $resultInscripciones = $connect->query( "select i.*,e.nombre nombreEquipo, e.col
 						<thead>
 							<tr>		
 								<th>Nombre</th>
+								<th>Competicion</th>
 								<th>Seleccione</th>
 							</tr>
 						</thead>
@@ -226,12 +197,17 @@ $('.dataTables-equipos').DataTable({
 	"pageLength": 10
 });
 });
+$(document).ready(function(){
+   $("#cmbComp").change(function () {
+		$("#divTeamInscritos").load('ajaxInscritos.php?opt=1&idComp='+$("#cmbComp").val());
+   })
+});	
 function fnInscribir(){
 	if( $("#cmbComp").val() <  1 ){
 		alert('Por favor seleeccione un competencia.');
 	}else{
 			idComp = $("#cmbComp").val();
-			 $.post("ajaxEquipos.php?opt=3", { idComp: idComp }, function(data){					
+			 $.post("ajaxEquipos.php?opt=3&idComp="+idComp, { idComp: idComp }, function(data){
 				 $("#tblBodyEqui").html(data);
 				 $("#modal-inscribir").modal('show');
 			 });
@@ -244,7 +220,7 @@ jQuery( document ).on( 'submit', '#formInscription', function ( event ) {
 		data: new FormData( this ),
 		success: function ( data ) {
 			//console.log( data );
-			location.href = './inscripciones.php';
+			location.href = './inscripciones.php?idComp='+$("#cmbComp").val();
 		},
 		error: function ( data ) {
 			//console.log( data );
@@ -263,7 +239,7 @@ function delInscrip( id ) {
 			data: new FormData( this ),
 			success: function ( data ) {
 				//console.log( data );
-				location.href = './inscripciones.php';
+				location.href = './inscripciones.php?idComp='+$("#cmbComp").val();
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -273,6 +249,11 @@ function delInscrip( id ) {
 			processData: false
 		} );
 	}
+}
+idCompRld=<?php echo($idCompRld); ?>;
+if( idCompRld != 0 ){
+	$("#divTeamInscritos").load('ajaxInscritos.php?opt=1&idComp='+idCompRld);
+	$("#cmbComp").val(idCompRld);
 }
 </script>
 <?php $connect->close(); ?>

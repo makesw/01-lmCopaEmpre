@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
@@ -160,6 +164,17 @@ var dataTable = 0;
 idComp=<?php echo($idComp); ?>;
 idFase=<?php echo($idFase); ?>;
 $(document).ready(function(){
+	if( (idComp != null && idComp != 0) && (idFase != null && idFase != 0)){
+		$("#divJuegosContent").load('ajaxJuegosInforme1.php?idFase='+idFase+'&idComp='+idComp);
+		 $.post("ajaxFases.php", { elegido: idComp }, function(data){
+			$("#cmbFase").html(data);
+			 $("#cmbFase").val(idFase);
+		}); 
+		
+	}
+	 $("#cmbComp").val(idComp);
+});
+$(document).ready(function(){
    $("#cmbComp").change(function () {
    		$("#cmbComp option:selected").each(function () {
             elegido=$(this).val();
@@ -175,9 +190,7 @@ $(document).ready(function(){
 	 idFase = $(this).val();
 	 $("#divJuegosContent").load('ajaxJuegosInforme1.php?idFase='+this.value+'&idComp='+$("#cmbComp").val());	  	
    })
-});	
-
-
+});
 jQuery( document ).on( 'submit', '#formSaveInforme', function ( event ) {		
 	$.ajax({
 			type: "POST",

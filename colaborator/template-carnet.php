@@ -1,19 +1,19 @@
-<?php ob_start();
+<?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     header( 'Location: ../index.html' );
 }else{
-    if($_SESSION[ 'dataSession' ]['perfil'] != 'admin'){
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
         header( 'Location: ../salir.php' );
     }
 }
 require '../conexion.php';
-$idPlayer = $_GET[ 'idPlayer' ];
+$idPlayer = 0;
 $player = mysqli_fetch_array($connect->query("select ju.*, e.nombre nombreEquipo, c.nombre nombreComp  from jugador ju join equipo e on ju.id_equipo = e.id and ju.id = ".$idPlayer." join competicion c on e.id_competicion = c.id limit 1"));
-setlocale (LC_TIME,"spanish");
-date_default_timezone_set('America/Bogota');
 $styleCarnet = mysqli_fetch_array($connect->query("select * from carnet limit 1"));
 
+setlocale (LC_TIME,"spanish");
+date_default_timezone_set('America/Bogota');
 ?>
 <!doctype html>
 <html>
@@ -73,14 +73,3 @@ $styleCarnet = mysqli_fetch_array($connect->query("select * from carnet limit 1"
 	</table>	
 </body>
 </html>
-<?php
-require_once '../dompdf/autoload.inc.php';
-use Dompdf\Dompdf;
-$html = ob_get_clean();
-$dompdf = new Dompdf();
-$dompdf->loadHtml($html);
-$dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
-$dompdf->stream('carnet_'.$player['id'].'.pdf');
-?>
-

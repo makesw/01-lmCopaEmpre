@@ -8,21 +8,12 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     }
 }
 require '../conexion.php';
-$resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
-$resultEscenarios = $connect->query( "select concat(e.nombre,' - ',s.nombre) escena, e.id idEscena from escenario e JOIN sede s ON e.id_sede = s.id order by e.nombre asc" );
-$idComp=0;
-$idFase=0;
-if(isset($_GET[ 'idComp' ])){
-	$idComp = $_GET[ 'idComp' ];
-}
-if(isset($_GET[ 'idFase' ])){
-	$idFase = $_GET[ 'idFase' ];
-}
-
+$resultJugVetados = $connect->query( "select jv.*,j.documento, concat(j.nombres,' ',j.apellidos) nombreJugador, e.nombre nombreEquipo, c.nombre competicion from jugador_vetado jv join jugador j on jv.documento_jugador = j.documento join equipo e on j.id_equipo = e.id join competicion c on e.id_competicion = c.id" );
+setlocale (LC_TIME,"spanish");
+date_default_timezone_set('America/Bogota');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -107,37 +98,53 @@ header('Pragma: no-cache');
 		<!-- Main content -->
 		<div class="main-content">
 			<form id="formJuegos">
-			<h1 class="page-title">Consultas / Posiciones</h1>
+			<h1 class="page-title">Liga / Jugadores Vetados</h1>
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-				<div class="panel-heading clearfix">
-					<div class="panel-body">
-						  <div class="form-group">
-							<label for="emailaddress">Competición</label>
-							<select class="form-control" required id="cmbComp" name="cmbComp"> 
-								<option value="">Seleccione una competencia</option><?php
-								while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
-									echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
-								}
-								?> 
-							</select>
-						  </div>
-						  <div class="form-group">
-							<label for="password">Fase</label>
-							<select class="form-control" required id="cmbFase" name="cmbFase">
-							</select>
-						  </div>					
-					</div>
-				</div>			
-				
-			</div>
-			</div>				
-			<div class="row">			
-			<div class="col-lg-12">
-					<div class="panel-body">
-						<div id="divPosicionesContent"></div>						
-					</div>								
+				<div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover dataTables-jugVetados" >
+                    <thead>
+                    	<tr>
+                    		<th>
+                    			<input type="checkbox" name="select_all" value="1" id="chkAllVetados">Sel.Todo
+                    			<a title="Borrar Seleccionados" href="javaScript:delVet();">
+                    				<i class="icon-cancel icon-larger red-color"></i>
+                    			</a>
+                    		</th>
+                    		<th>Documento</th>
+                    		<th>Nombres</th>
+                    		<th>Equipo</th>
+                    		<th>Competición</th>
+                    		<th>Fecha</th>
+                    		<th>Motivo</th>
+                    	</tr>
+                    </thead>
+                    <tbody>
+                    <?php
+                    while($row = mysqli_fetch_array($resultJugVetados)){
+                    	$date_a = "";
+                    	if(!empty($row['fecha'])){
+                    		$date_a = new DateTime($row['fecha']);
+                    		$date_a = $date_a->format('d-m-Y');
+                    	}
+                    ?>	
+                    <tr>	
+                    	<td>
+                    		<input type="checkbox" name="id[]" value="<?php echo $row['documento']; ?>">
+                    	</td>
+                    	<td> <?php echo $row['documento']; ?>	</td>
+                    	<td> <?php echo $row['nombreJugador']; ?>	</td>
+                    	<td> <?php echo $row['nombreEquipo']; ?>	</td>
+                    	<td> <?php echo $row['competicion']; ?>	</td>
+                    	<td> <?php echo $date_a; ?>	</td>
+                    	<td> <textarea rows="2"><?php echo $row['motivo']; ?></textarea></td>	
+                    </tr>
+                    <?php } ?>
+                    </tbody>
+                    </table>
+                 </div>	
+				</div>
 			</div>
 			</div>		
 			<!-- Footer -->
@@ -151,7 +158,28 @@ header('Pragma: no-cache');
 	<!-- /main container -->
 
 </div>
-<!-- /page container -->	
+<!-- /page container -->
+<div id="modal-payers" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Listado Jugadores</h4>
+			</div>
+			<div class="modal-body">
+				<form id="formVetar" method="post">
+					<div class="table-responsive" id="playersSection">
+						
+					</div>
+					<input type="hidden" id="idGrupHid" name="idGrupHid" value="" />
+					<button type="submit" class="btn btn-primary">Vetar</button> 
+				</form>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>	
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
 <script src="../js/bootstrap.min.js"></script>
@@ -168,45 +196,69 @@ header('Pragma: no-cache');
 <script src="../js/plugins/datatables/vfs_fonts.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.html5.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.colVis.js"></script>
-<script src="../js/plugins/datatables/extensions/Buttons/js/dataTables.buttons.min.js"></script>
 <script src="../js/plugins/datatables/jszip.min.js"></script>
 <script src="../js/plugins/datatables/pdfmake.min.js"></script>
 <script src="../js/plugins/datatables/vfs_fonts.js"></script>
 </body>
 </html>
 <script>
-var dataTable = 0;
-$('#tbl_teams tbody').on('change', 'input[type="checkbox"]', function(){
-	if($(this).is(':checked')){
-		arrSelectedTeam.push(this.value);
-	}else{
-		arrSelectedTeam.splice(arrSelectedTeam.indexOf(this.value), 1);
-	}
-});	
-idComp=<?php echo($idComp); ?>;
-idFase=<?php echo($idFase); ?>;
-$(document).ready(function(){
-   $("#cmbComp").change(function () {
-   		$("#cmbComp option:selected").each(function () {
-            elegido=$(this).val();
-			idComp = elegido;
-            $.post("ajaxFases.php", { elegido: elegido }, function(data){
-            $("#cmbFase").html(data);
-            });            
-        });
-   })
+var table;
+var arrSelectedPlayers=[];
+var checkAll = false;
+$(document).ready(function () {
+	table = $('.dataTables-jugVetados').DataTable({
+	"searching": true,
+	"bSort" : false,
+	"bLengthChange": false,
+	"bInfo": false,
+	"pageLength": 20,
+	"oLanguage": {
+	   "sSearch": "Buscar: "
+	 }
+	});
 });
-$(document).ready(function(){
-   $("#cmbFase").change(function () {
-	 idFase = $(this).val();
-	 $("#divPosicionesContent").load('ajaxPosiciones.php?idFase='+this.value+'&idComp='+$("#cmbComp").val());	  	
-   })
-});	
-if( idComp != null ){
-	$("#cmbComp").val(idComp);
-	 $.post("ajaxFases.php", { elegido: idComp }, function(data){
-	$("#cmbFase").html(data);
-	});	
+function delVet(){
+	// Iterate over all checkboxes in the table
+	table.$('input[type="checkbox"]').each(function(){
+	 // If checkbox doesn't exist in DOM
+	 //if(!$.contains(document, this)){
+		// If checkbox is checked
+		if(this.checked){
+		   arrSelectedPlayers.push( this.value );
+		}
+	 //}
+	});
+	if(arrSelectedPlayers.length < 1){
+		alert('Sleccione al menos un jugador!.');
+	}else{		
+		if(confirm('¿Confirma Eliminar?')){
+			$.ajax({
+				type: "POST",
+				url: "server.php?action=delVetados",
+				data:{ array : JSON.stringify(arrSelectedPlayers) },
+				dataType: "json",
+				success: function (data) {
+					//console.log(data);
+					arrSelectedPlayers=[];
+					checkAll = false;
+					location.href='./jugadoresVetados.php';
+				},
+				error: function (data) {
+					//console.log(data);
+					arrSelectedPlayers=[];
+					checkAll = false;
+					console.log(data);
+					location.href='./jugadoresVetados.php';
+				}
+			});
+		}
+	}
 }
+$('#chkAllVetados').on('click', function() { checkAll = true;
+   // Get all rows with search applied
+     var rows = table.rows({ 'search': 'applied' }).nodes();
+	// Check/uncheck checkboxes for all rows in the table
+      $('input[type="checkbox"]', rows).prop('checked', this.checked);	
+});
 </script>
 <?php $connect->close(); ?>

@@ -1,7 +1,11 @@
 <?php
 session_start();
 if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
-	header( 'Location: ../index.html' );
+    header( 'Location: ../index.html' );
+}else{
+    if($_SESSION[ 'dataSession' ]['perfil'] != 'colaborador'){
+        header( 'Location: ../salir.php' );
+    }
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1 and (id_parent is null or id_parent= 0) order by nombre asc" );
@@ -114,7 +118,6 @@ if(isset($_GET[ 'idComp' ])){
 				
 			</div>
 			</div>	
-			<h1 class="page-title">Goleadores</h1>		
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">
