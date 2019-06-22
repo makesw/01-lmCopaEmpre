@@ -314,11 +314,12 @@ if( idComp != null ){
 	
 }
 function delEquiGru( id ) {
+	var formData = new FormData();
 	if ( confirm( 'Confirma Eliminar?' ) ) {
 		$.ajax( {
 			url: 'server.php?action=delEquiGru&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: formData,
 			success: function ( data ) {
 				//console.log( data );
 				if(!data.error){
