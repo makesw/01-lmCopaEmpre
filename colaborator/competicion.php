@@ -346,10 +346,11 @@ jQuery( document ).on( 'submit', '#formCreateComp', function ( event ) {
 	return false;
 } );
 function editComp( id ) {
+	var formData = new FormData();
 	$.ajax( {
 			url: 'server.php?action=getDataComp&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: formData,
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
