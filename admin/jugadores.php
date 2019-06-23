@@ -309,10 +309,11 @@ jQuery( document ).on( 'submit', '#formCreateJug', function ( event ) {
 	return false;
 } );
 function editJug( id ) {
+	var formData = new FormData();
 	$.ajax( {
 			url: 'server.php?action=getDataJug&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: formData,
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);

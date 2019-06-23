@@ -362,8 +362,6 @@ jQuery( document ).on( 'submit', '#formCreateJug', function ( event ) {
 } );
 function editJug( id ) {
     var formData = new FormData();
-	//formData.append(this);
-	formData.append('file', $('input[type=file]')[0].files[0]);
 	$.ajax( {
 			url: 'server.php?action=getDataJug&id=' + id,
 			type: 'POST',
