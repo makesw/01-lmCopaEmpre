@@ -385,28 +385,31 @@ $(document).ready(function(){
    })
 });
 function genGames( idFase ){
-	idaYvuelta = 0;
-	if($('input[name=checkIdaVuelta]:checked', '#formJuegos').val()){
-		idaYvuelta = 1;	
-	}
-	$.ajax( {
-		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
-		type: 'POST',
-		data: new FormData( this ),
-		success: function ( data ) {
-			//console.log( data );
-			location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
-		},
-		error: function ( data ) {
-			//console.log( data );
-		},
-		cache: false,
-		contentType: false,
-		processData: false
-	} ); 	
+	if ( confirm( 'Confirma Generar o Actualizar Juegos ?' ) ) {
+    	idaYvuelta = 0;
+    	if($('input[name=checkIdaVuelta]:checked', '#formJuegos').val()){
+    		idaYvuelta = 1;	
+    	}
+    	var formData = new FormData();
+    	$.ajax( {
+    		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
+    		type: 'POST',
+    		data: formData,
+    		success: function ( data ) {
+    			//console.log( data );
+    			location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
+    		},
+    		error: function ( data ) {
+    			//console.log( data );
+    		},
+    		cache: false,
+    		contentType: false,
+    		processData: false
+    	} ); 
+	}	
 }	
 function delJuegos( idFase ) {
-	if ( confirm( 'Confirma Eliminar?' ) ) {
+	if ( confirm( 'Esto es Peligroso!, Confirma Eliminar Juegos?' ) ) {
 		$.ajax( {
 			url: 'server.php?action=delJuegos&idFase=' + idFase,
 			type: 'POST',

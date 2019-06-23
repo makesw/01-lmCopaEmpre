@@ -425,6 +425,10 @@ if ( $action == 'genGames' ) {
 	$idFase = $_GET[ 'idFase' ];
 	$idaYvuelta = $_GET[ 'idaYvuelta' ];
 	$resultGrupos = $connect->query( "select g.* from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase." order by nombre asc" );
+	
+	//Realizar limpieza de juegos de los grupos de las fase que no se hayan programado:
+	$connect->query( "delete from juego where id_fase = ".$idFase." and fecha is null and id_grupo in (select g.id from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase.")");
+	
 	while($rowGru = mysqli_fetch_array($resultGrupos)){
 		//quipos del grupo:
 		$resultEquipos = $connect->query( "select id_equipo from equipo_grupo eg JOIN equipo e ON eg.id_equipo = e.id WHERE eg.id_grupo =".$rowGru['id'] );
@@ -477,6 +481,7 @@ if ( $action == 'genGames' ) {
 				$rounds[$round][0] = $encuentro;
 			}
 		}
+		
 		//insertar juegos ida:
 		for ($fila = 0; $fila < count($rounds); $fila++) {
 			for ($columna = 0; $columna < count($rounds[$fila]); $columna++) {
@@ -489,6 +494,8 @@ if ( $action == 'genGames' ) {
 						$visitante = mysqli_fetch_array($connect->query("select * from equipo where id = ".$idsEquipos[1]));
 						$query = "INSERT INTO juego (id_equipo_1,nombre1,id_equipo_2,nombre2, tipo,id_grupo, id_fase, jornada) VALUES (".$local['id'].",'".$local['nombre']."',".$visitante['id'].",'".$visitante['nombre']."','OFICIAL',".$rowGru['id'].",".$idFase.",".($fila+1).")";
 						$result = $connect->query( $query );
+					}else{
+					    
 					}
 				}
 			}				
