@@ -233,7 +233,7 @@ $resultSedes = $connect->query( "select * from sede order by nombre asc" );
 				$.ajax( {
 					url: 'server.php?action=delSede&idSede=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log( data );
 						location.href = './sedes.php';
@@ -251,7 +251,7 @@ $resultSedes = $connect->query( "select * from sede order by nombre asc" );
 			$.ajax( {
 					url: 'server.php?action=getDataSede&idSede=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log(data);
 						$("#nombreSede").val(data.nombre);

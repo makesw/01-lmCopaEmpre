@@ -268,7 +268,7 @@ function delPayPlayer( id ) {
 		$.ajax( {
 			url: 'server.php?action=delPayPlayer&id='+id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.reload();

@@ -211,7 +211,7 @@ function delPago( idAbono ) {
 		$.ajax( {
 			url: 'server.php?action=delAbono&idAbono='+idAbono,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.reload();

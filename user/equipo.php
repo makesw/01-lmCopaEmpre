@@ -271,7 +271,7 @@ function editEqui( id ) {
 	$.ajax( {
 			url: 'server.php?action=getDataEqui&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
@@ -297,7 +297,7 @@ function delEqui( id ) {
 		$.ajax( {
 			url: 'server.php?action=delEqui&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './equipo.php';

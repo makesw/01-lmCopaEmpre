@@ -264,7 +264,7 @@ $resultTSuspencion = $connect->query( "select * from tipo_sancion order by nombr
 			$.ajax( {
 					url: 'server.php?action=getDataTsancion&id=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log(data);
 						$("#nombreEts").val(data.nombre);
@@ -311,7 +311,7 @@ $resultTSuspencion = $connect->query( "select * from tipo_sancion order by nombr
 				$.ajax( {
 					url: 'server.php?action=delTsanc&id=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log( data );
 						location.href = './tipoSanciones.php';

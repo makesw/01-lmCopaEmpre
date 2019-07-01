@@ -398,10 +398,11 @@ function editComp( id ) {
 		} );
 }
 function verDetalleComp( id ) {
+	var formData = new FormData();
 	$.ajax( {
 			url: 'server.php?action=getDataComp&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: formData,
 			success: function ( data ) {
 				//console.log(data);
 				$("#nombreDet").val(data.nombre);
@@ -441,7 +442,7 @@ function delComp( id ) {
 		$.ajax( {
 			url: 'server.php?action=delComp&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './competicion.php';

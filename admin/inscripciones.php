@@ -236,7 +236,7 @@ function delInscrip( id ) {
 		$.ajax( {
 			url: 'server.php?action=delInscrip&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './inscripciones.php?idComp='+$("#cmbComp").val();

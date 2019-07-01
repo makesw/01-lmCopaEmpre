@@ -603,7 +603,7 @@ function delGol( id ) {
 		$.ajax( {
 			url: 'server.php?action=delGol&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>'+'&btnGoles=1';
@@ -663,7 +663,7 @@ function delSan( id ) {
 		$.ajax( {
 			url: 'server.php?action=delSan&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
@@ -742,7 +742,7 @@ function fnClearIforme() {
 		$.ajax( {
 			url: 'server.php?action=clearInforme&idJuego=<?php echo($idJuego); ?>'+'&idFase=<?php echo($idFase);?>',
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './informe_2.php?idComp=<?php echo $idComp; ?>&idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php echo($idFase);?>';
@@ -761,7 +761,7 @@ function fnUpdateGoles() {
 	$.ajax( {
 		url: 'server.php?action=updateTableGroup&idJuego=<?php echo($idJuego); ?>'+'&idFase=<?php echo($idFase);?>',
 		type: 'POST',
-		data: new FormData( this ),
+		data: new FormData(  ),
 		success: function ( data ) {
 			console.log( data );
 			//location.href = './informe_2.php?idJuego=<?php echo($idJuego) ?>'+'&idFase=<?php //echo($idFase);?>'+'&btnGoles=0';

@@ -349,7 +349,7 @@ function delPlayer( id ) {
 		$.ajax( {
 			url: 'server.php?action=delPlayer&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './jugadores.php?idEqui=<?php echo $equipo[ 'id'];?>';

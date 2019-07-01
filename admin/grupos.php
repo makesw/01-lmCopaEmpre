@@ -255,7 +255,7 @@ function editGrupo( id, idFase ) {
 	$.ajax( {
 			url: 'server.php?action=getDataGrupo&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
@@ -283,7 +283,7 @@ function delGrupo( id ) {
 		$.ajax( {
 			url: 'server.php?action=delGrupo&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './grupos.php';

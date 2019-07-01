@@ -392,7 +392,7 @@ function genGames( idFase ){
 	$.ajax( {
 		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
 		type: 'POST',
-		data: new FormData( this ),
+		data: new FormData(  ),
 		success: function ( data ) {
 			//console.log( data );
 			location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
@@ -410,7 +410,7 @@ function delJuegos( idFase ) {
 		$.ajax( {
 			url: 'server.php?action=delJuegos&idFase=' + idFase,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
@@ -503,7 +503,7 @@ function fnClearProg( idJuego ) {
 		$.ajax( {
 			url: 'server.php?action=clearProg&id=' + idJuego,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
@@ -561,7 +561,7 @@ function delGame( id ) {
 		$.ajax( {
 			url: 'server.php?action=delJuego&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				if(!data.error){
@@ -585,7 +585,7 @@ function fnAplazar( idJuego ) {
 		$.ajax( {
 			url: 'server.php?action=aplazarGame&id=' + idJuego,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;

@@ -89,7 +89,7 @@ function delSan( id ) {
 		$.ajax( {
 			url: 'server.php?action=delSan&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './sancionados.php?idCompReload=<?php echo($idComp) ?>';

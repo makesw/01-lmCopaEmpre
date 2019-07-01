@@ -254,7 +254,7 @@ $resultSedesSelect2 = $connect->query( "select * from sede order by nombre asc" 
 			$.ajax( {
 					url: 'server.php?action=getDataEscena&id=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log(data);
 						$("#nombreEscena").val(data.nombre);
@@ -293,7 +293,7 @@ $resultSedesSelect2 = $connect->query( "select * from sede order by nombre asc" 
 				$.ajax( {
 					url: 'server.php?action=delEscena&id=' + id,
 					type: 'POST',
-					data: new FormData( this ),
+					data: new FormData(  ),
 					success: function ( data ) {
 						//console.log( data );
 						location.href = './escenarios.php';

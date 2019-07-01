@@ -167,7 +167,7 @@ function aceptarTerminos( ) {
 	$.ajax( {
 		url: 'ajaxTerminos.php',
 		type: 'POST',
-		data: new FormData( this ),
+		data: new FormData(  ),
 		success: function ( data ) {
 			//console.log( data );
 			location.reload();

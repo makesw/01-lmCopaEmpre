@@ -260,7 +260,7 @@ function editFase( id ) {
 	$.ajax( {
 			url: 'server.php?action=getDataFase&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
@@ -288,7 +288,7 @@ function delFase( id ) {
 		$.ajax( {
 			url: 'server.php?action=delFase&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './fases.php';

@@ -256,7 +256,7 @@ function delDctos( idEquipo, idComp ) {
 		$.ajax( {
 			url: 'server.php?action=delDtos&idEquipo='+idEquipo+'&idComp='+idComp,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				location.href = './pagos.php?idComp='+idComp;

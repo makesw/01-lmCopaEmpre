@@ -247,7 +247,7 @@ function editEqui( id ) {
 	$.ajax( {
 			url: 'server.php?action=getDataEqui&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
@@ -318,7 +318,7 @@ function delEquiGru( id ) {
 		$.ajax( {
 			url: 'server.php?action=delEquiGru&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log( data );
 				if(!data.error){

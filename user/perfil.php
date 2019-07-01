@@ -281,7 +281,7 @@ function editUser( id ) {
 	$.ajax( {
 			url: 'server.php?action=getDataUser&id=' + id,
 			type: 'POST',
-			data: new FormData( this ),
+			data: new FormData(  ),
 			success: function ( data ) {
 				//console.log(data);
 				$("#bthAction").val(2);
