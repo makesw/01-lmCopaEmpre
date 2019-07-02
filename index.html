@@ -89,14 +89,14 @@ jQuery(document).on('submit','#formLogin', function(event){
 		}
 	})
 	.fail(function(resp){
-		console.log(resp.responseText);	  
+		//console.log(resp.responseText);	  
 		$('#msg-fail').show();
 		setTimeout(function(){
 			$('#msg-fail').hide();
 		},3000);
 	})
 	.always(function(respuesta){ 
-		console.log(respuesta);	
+		//console.log(respuesta);	
 	})
 });
 </script>
