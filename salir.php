@@ -1,5 +1,5 @@
 <?php 
-	session_unset();
-    session_destroy();
-	header('Location: ./');
+	session_start();
+	session_destroy();
+	header('Location: ./index.html');	
 ?>

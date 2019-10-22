@@ -314,13 +314,14 @@ if( idComp != null ){
 	
 }
 function delEquiGru( id ) {
+	var formData = new FormData();
 	if ( confirm( 'Confirma Eliminar?' ) ) {
 		$.ajax( {
-			url: 'server.php?action=delEquiGru&id=' + id +'&idComp='+idComp+'&idFase='+idFase,
+			url: 'server.php?action=delEquiGru&id=' + id,
 			type: 'POST',
-			data: new FormData(  ),
+			data: formData,
 			success: function ( data ) {
-				console.log( data );
+				//console.log( data );
 				if(!data.error){
 					location.href = './grupos_equipos.php?idComp='+idComp+'&idFase='+idFase;
 				}else{
@@ -329,7 +330,7 @@ function delEquiGru( id ) {
 				}
 			},
 			error: function ( data ) {
-				console.log( data );
+				//console.log( data );
 			},
 			cache: false,
 			contentType: false,

@@ -233,27 +233,25 @@ if ( $action == 'addUpdEqui' ) {
 	$bthAction = 0;
 	$idComp = 0;
 	$foto = '../images/fotosEquipos/default.png';
-	$fotoEscudo = '../images/fotosEscudo/default.png';
+	$fotoEscudo = '../images/fotosEscudos/default.png';
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
 	if(isset($_POST[ "cmbComp"])){$idComp=$_POST[ "cmbComp" ];}
 	if( $bthAction == 1 ){ //insert data
-		$foto;
 		if( !empty ($_FILES['foto']['name']) ){
 			//Upload foto:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
 			$targetPathFoto = "../images/fotosEquipos/".$_POST[ 'nombre' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 			$foto = $targetPathFoto;
-			
-			if( !empty ($_FILES['escudo']['name']) ){
-			   	//Upload escudo:
-    			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
-    			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
-    			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-    			$fotoEscudo = $targetPathFotoEsc;
-			}
+		}
+		if( !empty ($_FILES['escudo']['name']) ){
+		    //Upload escudo:
+		    $sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
+			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
+			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
+			$fotoEscudo = $targetPathFotoEsc;
 		}	
-		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."')";
+		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto,url_escudo) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."','".$fotoEscudo."')";
 		$result = $connect->query( $query );
 		if( $result == 1){		
 			echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
@@ -264,42 +262,44 @@ if ( $action == 'addUpdEqui' ) {
 		$foto;
 		$fotoEscudo;
 		if( !empty ($_FILES['foto']['name']) ){
-			//Upload foto:
+		    //Borrar foto anterior de servidor:
+		    $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
+		    if(!strpos($equipo['url_foto'], 'default.png')){
+		        unlink($equipo[ 'url_foto']);
+		    }						
+			//Cargar nueva foto a Servidor:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
 			$targetPathFoto = "../images/fotosEquipos/".$_POST[ 'nombre' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
-			$foto = $targetPathFoto;
-			//Delete old foto from server:
-			$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-			if(!strpos($equipo['url_foto'], 'default.png')){
-				unlink($equipo[ 'url_foto']);
-			}
-			//update foto:		
+			$foto = $targetPathFoto;			
+			//Actualizar nueva foto en BD:		
 			if(!empty ($_FILES['foto']['name'])){
 				$query2 = "UPDATE equipo SET url_foto='".$foto."' WHERE id = ".$_POST[ "bthValId" ];
 				$result = $connect->query( $query2 );
 			}	
-			
-			//Upload foto:
+		}
+		if( !empty ($_FILES['escudo']['name']) ){
+		    //Borrar escudo anterior de servidor:
+		    $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
+		    if(!strpos($equipo['url_escudo'], 'default.png')){
+		        unlink($equipo[ 'url_escudo']);
+		    }			
+		    //Cargar nuevo escudo a Servidor:
 			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
 			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
 			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-			$fotoEscudo = $targetPathFotoEsc;
-			//Delete old foto from server:
-			$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-			if(!strpos($equipo['url_escudo'], 'default.png')){
-			    unlink($equipo[ 'url_escudo']);
-			}
-			//update foto:
+			$fotoEscudo = $targetPathFotoEsc;			
+			//Actualizar nuevo escudo en BD:
 			if(!empty ($_FILES['escudo']['name'])){
 			    $query2 = "UPDATE equipo SET url_escudo='".$fotoEscudo."' WHERE id = ".$_POST[ "bthValId" ];
 			    $result = $connect->query( $query2 );
 			}	
 		}		
+		//Actualizar datos restantes de equipo:
 		$query = "UPDATE equipo SET nombre='".$_POST["nombre"]."',color='".$_POST["color"]."',id_usuario='".$_POST[ "cmbUser" ]."',id_competicion=".$idComp." WHERE id = ".$_POST[ "bthValId" ];
-		$result = $connect->query( $query );
+		$result = $connect->query( $query );		
 		if( $result == 1){		
-			//update juego:
+			//Se debe actualizar nombre de equipo en juegos:
 			$result = $connect->query( "UPDATE juego SET nombre1='".$_POST["nombre"]."' WHERE id_equipo_1 = ".$_POST[ "bthValId" ] );
 			$result = $connect->query( "UPDATE juego SET nombre2='".$_POST["nombre"]."' WHERE id_equipo_2 = ".$_POST[ "bthValId" ] );
 			echo json_encode(array('error'=>false,'description'=>'Registro Actualizado'));
@@ -315,9 +315,16 @@ if ( $action == 'getDataEqui' ) {
 }
 if ( $action == 'delEqui' ) {	
 	$id = $_GET[ 'id' ];
-	$sql = "DELETE FROM equipo WHERE id=".$id;	
-	$result = $connect->query( $sql );
-	if( $result == 1){		
+	//eliminar foto y escudo de servidor:
+	$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$id));
+	if(!strpos($equipo['url_foto'], 'default.png')){
+	    unlink($equipo[ 'url_foto']);
+	}
+	if(!strpos($equipo['url_escudo'], 'default.png')){
+	    unlink($equipo[ 'url_escudo']);
+	}	
+	$result = $connect->query( "DELETE FROM equipo WHERE id=".$id );
+	if( $result == 1){	    
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
 	}else{
 		echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro'));
@@ -410,9 +417,10 @@ if ( $action == 'addEquiGru' ) {
 	echo json_encode(array('error'=>false,'description'=>'Registros Creados'));
 }
 if ( $action == 'delEquiGru' ) {	
+    $idComp = $_GET[ 'idComp' ];
 	$id = $_GET[ 'id' ];
-	//validate juegos:
-	$juego = mysqli_fetch_array($connect->query( "select count(1) total from juego where id_equipo_1 = (select id_equipo  FROM equipo_grupo WHERE id= ".$id." and PTS <> 0 limit 1) OR id_equipo_2=(select id_equipo  FROM equipo_grupo WHERE id= ".$id." and PTS <> 0 limit 1)" ));
+    //validate juegos:
+    $juego = mysqli_fetch_array($connect->query( "select count(1) total from juego where id_competicion = ".$idComp." and ( id_equipo_1 = (select id_equipo  FROM equipo_grupo WHERE id= ".$id." limit 1) OR id_equipo_2=(select id_equipo  FROM equipo_grupo WHERE id= ".$id." limit 1) )" ));
 	if( $juego['total']<1 ){
 		$sql = "DELETE FROM equipo_grupo WHERE id=".$id;	
 		$result = $connect->query( $sql );
@@ -425,10 +433,6 @@ if ( $action == 'genGames' ) {
 	$idFase = $_GET[ 'idFase' ];
 	$idaYvuelta = $_GET[ 'idaYvuelta' ];
 	$resultGrupos = $connect->query( "select g.* from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase." order by nombre asc" );
-	
-	//Realizar limpieza de juegos de los grupos de las fase que no se hayan programado:
-	$connect->query( "delete from juego where id_fase = ".$idFase." and fecha is null and id_grupo in (select g.id from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase.")");
-	
 	while($rowGru = mysqli_fetch_array($resultGrupos)){
 		//quipos del grupo:
 		$resultEquipos = $connect->query( "select id_equipo from equipo_grupo eg JOIN equipo e ON eg.id_equipo = e.id WHERE eg.id_grupo =".$rowGru['id'] );
@@ -481,7 +485,6 @@ if ( $action == 'genGames' ) {
 				$rounds[$round][0] = $encuentro;
 			}
 		}
-		
 		//insertar juegos ida:
 		for ($fila = 0; $fila < count($rounds); $fila++) {
 			for ($columna = 0; $columna < count($rounds[$fila]); $columna++) {
@@ -494,8 +497,6 @@ if ( $action == 'genGames' ) {
 						$visitante = mysqli_fetch_array($connect->query("select * from equipo where id = ".$idsEquipos[1]));
 						$query = "INSERT INTO juego (id_equipo_1,nombre1,id_equipo_2,nombre2, tipo,id_grupo, id_fase, jornada) VALUES (".$local['id'].",'".$local['nombre']."',".$visitante['id'].",'".$visitante['nombre']."','OFICIAL',".$rowGru['id'].",".$idFase.",".($fila+1).")";
 						$result = $connect->query( $query );
-					}else{
-					    
 					}
 				}
 			}				
@@ -700,16 +701,20 @@ if ( $action == 'addManualGame' ) {
 		$array = json_decode($_POST['array']);
 		$team1 = mysqli_fetch_array( $connect->query("select * from equipo WHERE id =".$array[0]) );
 		$team2 = mysqli_fetch_array( $connect->query("select * from equipo WHERE id =".$array[1]) );
-		$query = "INSERT INTO juego (id_equipo_1,id_equipo_2,nombre1,nombre2,tipo) VALUES (".$team1['id'].",".$team2['id'].",'".$team1['nombre']."','".$team2['nombre']."','OFICIAL')";		
+		$query = "INSERT INTO juego (id_equipo_1,id_equipo_2,nombre1,nombre2,tipo,id_fase) VALUES (".$team1['id'].",".$team2['id'].",'".$team1['nombre']."','".$team2['nombre']."','OFICIAL',".$array[2].")";		
 		$result = $connect->query( $query );
 	}
 	echo json_encode(array('error'=>false,'description'=>'Registros Creados'));
 }
 if ( $action == 'delJuego' ) {	
 	$id = $_GET[ 'id' ];
+	//Consultar Data de Juego:
+	$arrayGame =  mysqli_fetch_array( $connect->query( "select * from juego where id=".$id));
 	$sql = "DELETE FROM juego WHERE id=".$id;	
 	$result = $connect->query( $sql );
-	if( $result == 1){		
+	if( $result == 1){
+	    //recalcular tabla estadistica de equipos:
+	    updateTableGroup($arrayGame, false);
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
 	}else{
 		echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro'));
@@ -934,134 +939,136 @@ if ( $action == 'saveInforme' ) {
 	}
 	//actualziar informe arbitral:
 	$connect->query( "UPDATE juego SET informe ='".$_POST["informe"]."', informado=1, id_ganador_penales=".$idGanaPenales." WHERE id=".$idJuego);
+	//Consultar Data de Juego:
+	$arrayGame =  mysqli_fetch_array( $connect->query( "select * from juego where id=".$idJuego));
 	//recalcular puntuaciones de equipos:
-	updateTableGroup($idFase,$idJuego, false);	
+	updateTableGroup($arrayGame, false);	
 	echo json_encode(array('error'=>false,'description'=>'Informe Guardado y Tabla Actualizada'));	
 }
-function updateTableGroup( $idFase, $idJuego, $isClear ) {	
-	require '../conexion.php';
-	//consultar equipo grupo actual equipo_1:
-	$equipog1 = mysqli_fetch_array( $connect->query( "select eg.* from juego j JOIN equipo_grupo eg ON j.id_equipo_1 = eg.id_equipo and j.id =".$idJuego." JOIN grupo g ON eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id=".$idFase ) );
-	//consultar equipo grupo actual equipo_2:
-	$equipog2 = mysqli_fetch_array( $connect->query( "select eg.* from juego j JOIN equipo_grupo eg ON j.id_equipo_2 = eg.id_equipo and j.id =".$idJuego." JOIN grupo g ON eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id=".$idFase ) );
-	
-	//actualizar partidos jugados equipo_1:
-	$connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and j.id_fase = ".$idFase."  AND eg.id_equipo = ".$equipog1['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase.") AS x) where id =".$equipog1['id']);
-	
-	//actualizar partidos jugados equipo_2:
-	$connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and j.id_fase = ".$idFase." AND eg.id_equipo = ".$equipog2['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase.") AS x) where id =".$equipog2['id']);
-		
-	//contar goles del juego para equipo_1
-	$goles1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$idJuego." and g.id_equipo =".$equipog1['id_equipo']));
-	//contar goles del juego para equipo_2
-	$goles2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$idJuego." and g.id_equipo =".$equipog2['id_equipo']));
-	
-	$partidosGanados1 = 0;
-	$partidosPerdidos1 = 0;
-	$partidosEmpatados1 = 0;
-	$partidosGanados2 = 0;
-	$partidosPerdidos2 = 0;
-	$partidosEmpatados2 = 0;
-
-	if( $goles1['total'] > $goles2['total'] ){ //GANADOR LOCAL
-		//actualizar juego ganador equipo_1:
-		$connect->query("update juego set id_ganador =".$equipog1['id_equipo']." where id=".$idJuego);		
-	}else if($goles1['total'] < $goles2['total']){ //GANADOR VISITANTE
-		//actualizar juego ganador equipo_2:
-		$connect->query("update juego set id_ganador =".$equipog2['id_equipo']." where id=".$idJuego);		
-	}else if($goles1['total'] == $goles2['total']){ //EMPATE
-		//actualizar juego ganador empate:
-		if( !$isClear ){
-			$connect->query("update juego set id_ganador = 0 where id=".$idJuego);
-		}
-	}
-	//contar cuantos juegos ganados tiene hasta ahora equipo_1 en el grupo de la fase
-	$ganados1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = ".$equipog1['id_equipo']." and j.id_fase = ".$idFase." and j.id_ganador = eg.id_equipo join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase ));
-	//actualizar partidos ganados equipo_1:
-	$connect->query("update equipo_grupo set GAN = (".$ganados1['total'].") where id =".$equipog1['id']);
-	$partidosGanados1 = $ganados1['total'];
-	//contar cuantos juegos perdidos tiene hasta ahora equipo_2 en el grupo de la fase
-	$perdidos2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on eg.id_equipo = ".$equipog2['id_equipo']." and j.id_fase = ".$idFase." and (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and j.id_ganador <>".$equipog2['id_equipo']." and j.id_ganador <> 0 join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase ));	
-	//actualizar partidos perdidos equipo_2:
-	$connect->query("update equipo_grupo set PER = (".$perdidos2['total'].") where id =".$equipog2['id']);
-	$partidosPerdidos2 = $perdidos2['total'];
-	
-	//contar cuantos juegos ganados tiene hasta ahora equipo_2 en el grupo de la fase
-	$ganados2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = ".$equipog2['id_equipo']." and j.id_fase = ".$idFase." and j.id_ganador = eg.id_equipo join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase ));
-	//actualizar partidos ganados equipo_2:
-	$connect->query("update equipo_grupo set GAN = (".$ganados2['total'].") where id =".$equipog2['id']);
-	$partidosGanados2 = $ganados2['total'];
-	//contar cuantos juegos perdidos tiene hasta ahora equipo_1 en el grupo de la fase
-	$perdidos1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on eg.id_equipo = ".$equipog1['id_equipo']." and j.id_fase = ".$idFase." and (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and j.id_ganador <>".$equipog1['id_equipo']." and j.id_ganador <> 0 join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$idFase ));	
-	//actualizar partidos perdidos equipo_2:
-	$connect->query("update equipo_grupo set PER = (".$perdidos1['total'].") where id =".$equipog1['id']);
-	$partidosPerdidos1 = $perdidos1['total'];
-	
-	//contar cuantos EMPATES tiene hasta ahora equipo_1 en el grupo de la fase
-	$empates1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = 0 and j.id_fase = ".$idFase." and (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and (eg.id_equipo = j.id_equipo_1 or eg.id_equipo = j.id_equipo_2 ) join grupo g on eg.id_grupo = g.id  join fase f on g.id_fase = f.id and eg.id_equipo = ".$equipog1['id_equipo']." and f.id = ".$idFase));			
-	//contar cuantos EMPATES tiene hasta ahora equipo_2
-	$empates2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = 0 and j.id_fase = ".$idFase." and (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and (eg.id_equipo = j.id_equipo_1 or eg.id_equipo = j.id_equipo_2 ) join grupo g on eg.id_grupo = g.id  join fase f on g.id_fase = f.id and eg.id_equipo = ".$equipog2['id_equipo']." and f.id = ".$idFase));		
-	//actualizar partidos empates equipo_1:
-	$connect->query("update equipo_grupo set EMP = (".$empates1['total'].") where id =".$equipog1['id']);
-	//actualizar partidos empates equipo_2:
-	$connect->query("update equipo_grupo set EMP = (".$empates2['total'].") where id =".$equipog2['id']);
-	$partidosEmpatados1 = $empates1['total'];
-	$partidosEmpatados2 = $empates2['total'];
-		
-	//contar cuantos goles tiene hasta ahora el equipo_1 en el grupo de la fase:
-	$golesTotal1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g join juego j ON g.id_juego = j.id and j.id_fase = ".$idFase." and g.id_equipo = ".$equipog1['id_equipo']." join equipo_grupo eg on eg.id_equipo = g.id_equipo join grupo gr ON eg.id_grupo = gr.id and gr.id_fase =".$idFase));	
-	//actualizar GAF equipo_1:	
-	$connect->query("update equipo_grupo set GAF = (".$golesTotal1['total'].") where id =".$equipog1['id']);
-	
-	//contar cuantos goles tiene hasta ahora el equipo_2 en el grupo de la fase:
-	$golesTotal2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g join juego j ON g.id_juego = j.id and j.id_fase = ".$idFase." and g.id_equipo = ".$equipog2['id_equipo']." join equipo_grupo eg on eg.id_equipo = g.id_equipo join grupo gr ON eg.id_grupo = gr.id and gr.id_fase =".$idFase));	
-	//actualizar GAF equipo_2:	
-	$connect->query("update equipo_grupo set GAF = (".$golesTotal2['total'].") where id =".$equipog2['id']);
-	
-	//contar cuantos goles en contra tiene hasta ahora el equipo_1 en el grupo de la fase:
-	$golesContraTotal1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g  join equipo_grupo eg ON g.id_equipo = eg.id_equipo and g.id_equipo <> ".$equipog1['id_equipo']."  join grupo gr ON eg.id_grupo = gr.id and gr.id_fase = ".$idFase." and g.id_juego in(select id from juego where (id_equipo_1 = ".$equipog1['id_equipo']." or id_equipo_2 = ".$equipog1['id_equipo'].") and id_fase = ".$idFase." )" ));	
-	//actualizar GEC equipo_1:	
-	$connect->query("update equipo_grupo set GEC = (".$golesContraTotal1['total'].") where id =".$equipog1['id']);
-	
-	//contar cuantos goles en contra tiene hasta ahora el equipo_2 en el grupo de la fase:
-	$golesContraTotal2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g  join equipo_grupo eg ON g.id_equipo = eg.id_equipo and g.id_equipo <> ".$equipog2['id_equipo']."  join grupo gr ON eg.id_grupo = gr.id and gr.id_fase = ".$idFase." and g.id_juego in(select id from juego where (id_equipo_1 = ".$equipog2['id_equipo']." or id_equipo_2 = ".$equipog2['id_equipo'].") and id_fase = ".$idFase.")" ));		
-	//actualizar GEC equipo_2:	
-	$connect->query("update equipo_grupo set GEC = (".$golesContraTotal2['total'].") where id =".$equipog2['id']);
-	
-	//actualizar DIF equipo_1
-	$connect->query("update equipo_grupo set DIF = (".$golesTotal1['total']."-(".$golesContraTotal1['total'].")) where id =".$equipog1['id']);
-	
-	//actualizar DIF equipo_2
-	$connect->query("update equipo_grupo set DIF = (".$golesTotal2['total']."-".$golesContraTotal2['total'].") where id =".$equipog2['id']);
-	
-	//consultar pts por ganar competencia:
-	$ptsGanador = mysqli_fetch_array($connect->query( "select puntos_ganador from fase f join competicion c on f.id_competicion = c.id and f.id = ".$idFase ));
-	
-	//consultar pts por empatar competencia:
-	$ptsEmpate = mysqli_fetch_array($connect->query( "select puntos_empate from fase f join competicion c on f.id_competicion = c.id and f.id = ".$idFase ));
-	
-	//consultar pts por perder competencia:
-	$ptsPerdedor = mysqli_fetch_array($connect->query( "select puntos_perdedor from fase f join competicion c on f.id_competicion = c.id and f.id = ".$idFase ));
-	
-	//calculo puntos equipo_1
-	$pts= 0;
-	$ptsG = $ptsGanador['puntos_ganador']*$partidosGanados1;
-	$ptsE = $ptsEmpate['puntos_empate']*$partidosEmpatados1;
-	$ptsP = $ptsPerdedor['puntos_perdedor']*$partidosPerdidos1;	
-		
-	$pts = $ptsG+$ptsE+$ptsP;
-	//actualizar PTS equipo_1
-	$connect->query("update equipo_grupo set PTS = (".$pts.") where id =".$equipog1['id']);
-	
-	//calculo puntos equipo_2
-	$pts= 0;
-	$ptsG = $ptsGanador['puntos_ganador']*$partidosGanados2;
-	$ptsE = $ptsEmpate['puntos_empate']*$partidosEmpatados2;
-	$ptsP = $ptsPerdedor['puntos_perdedor']*$partidosPerdidos2;		
-	
-	$pts = $ptsG+$ptsE+$ptsP;
-	//actualizar PTS equipo_2
-	$connect->query("update equipo_grupo set PTS = (".$pts.") where id =".$equipog2['id']);
+function updateTableGroup( $arrayGame, $isClear ) {
+    require '../conexion.php';
+    //consultar equipo grupo actual equipo_1:
+    $equipog1 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_1']." and id_grupo = ".$arrayGame['id_grupo'] ) );
+    //consultar equipo grupo actual equipo_2:
+    $equipog2 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_2']." and id_grupo = ".$arrayGame['id_grupo'] ) );
+    
+    //actualizar partidos jugados equipo_1:
+    $connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and j.id_fase = ".$arrayGame['id_fase']."  AND eg.id_equipo = ".$equipog1['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'].") AS x) where id =".$equipog1['id']);
+    
+    //actualizar partidos jugados equipo_2:
+    $connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and j.id_fase = ".$arrayGame['id_fase']." AND eg.id_equipo = ".$equipog2['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'].") AS x) where id =".$equipog2['id']);
+    
+    //contar goles del juego para equipo_1
+    $goles1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog1['id_equipo']));
+    //contar goles del juego para equipo_2
+    $goles2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog2['id_equipo']));
+    
+    $partidosGanados1 = 0;
+    $partidosPerdidos1 = 0;
+    $partidosEmpatados1 = 0;
+    $partidosGanados2 = 0;
+    $partidosPerdidos2 = 0;
+    $partidosEmpatados2 = 0;
+    
+    if( $goles1['total'] > $goles2['total'] ){ //GANADOR LOCAL
+        //actualizar juego ganador equipo_1:
+        $connect->query("update juego set id_ganador =".$equipog1['id_equipo']." where id=".$arrayGame['id']);
+    }else if($goles1['total'] < $goles2['total']){ //GANADOR VISITANTE
+        //actualizar juego ganador equipo_2:
+        $connect->query("update juego set id_ganador =".$equipog2['id_equipo']." where id=".$arrayGame['id']);
+    }else if($goles1['total'] == $goles2['total']){ //EMPATE
+        //actualizar juego empate:
+        if( !$isClear ){
+            $connect->query("update juego set id_ganador = 0 where id=".$arrayGame['id']);
+        }
+    }
+    //contar cuantos juegos ganados tiene hasta ahora equipo_1 en el grupo de la fase
+    $ganados1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = ".$equipog1['id_equipo']." and j.id_fase = ".$arrayGame['id_fase']." and j.id_ganador = eg.id_equipo join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'] ));
+    //actualizar partidos ganados equipo_1:
+    $connect->query("update equipo_grupo set GAN = (".$ganados1['total'].") where id =".$equipog1['id']);
+    $partidosGanados1 = $ganados1['total'];
+    //contar cuantos juegos perdidos tiene hasta ahora equipo_2 en el grupo de la fase
+    $perdidos2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on eg.id_equipo = ".$equipog2['id_equipo']." and j.id_fase = ".$arrayGame['id_fase']." and (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and j.id_ganador <>".$equipog2['id_equipo']." and j.id_ganador <> 0 join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'] ));
+    //actualizar partidos perdidos equipo_2:
+    $connect->query("update equipo_grupo set PER = (".$perdidos2['total'].") where id =".$equipog2['id']);
+    $partidosPerdidos2 = $perdidos2['total'];
+    
+    //contar cuantos juegos ganados tiene hasta ahora equipo_2 en el grupo de la fase
+    $ganados2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = ".$equipog2['id_equipo']." and j.id_fase = ".$arrayGame['id_fase']." and j.id_ganador = eg.id_equipo join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'] ));
+    //actualizar partidos ganados equipo_2:
+    $connect->query("update equipo_grupo set GAN = (".$ganados2['total'].") where id =".$equipog2['id']);
+    $partidosGanados2 = $ganados2['total'];
+    //contar cuantos juegos perdidos tiene hasta ahora equipo_1 en el grupo de la fase
+    $perdidos1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on eg.id_equipo = ".$equipog1['id_equipo']." and j.id_fase = ".$arrayGame['id_fase']." and (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and j.id_ganador <>".$equipog1['id_equipo']." and j.id_ganador <> 0 join grupo g on eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'] ));
+    //actualizar partidos perdidos equipo_2:
+    $connect->query("update equipo_grupo set PER = (".$perdidos1['total'].") where id =".$equipog1['id']);
+    $partidosPerdidos1 = $perdidos1['total'];
+    
+    //contar cuantos EMPATES tiene hasta ahora equipo_1 en el grupo de la fase
+    $empates1 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = 0 and j.id_fase = ".$arrayGame['id_fase']." and (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and (eg.id_equipo = j.id_equipo_1 or eg.id_equipo = j.id_equipo_2 ) join grupo g on eg.id_grupo = g.id  join fase f on g.id_fase = f.id and eg.id_equipo = ".$equipog1['id_equipo']." and f.id = ".$arrayGame['id_fase']));
+    //contar cuantos EMPATES tiene hasta ahora equipo_2
+    $empates2 = mysqli_fetch_array($connect->query( "select count(1) total from juego j join equipo_grupo eg on j.id_ganador = 0 and j.id_fase = ".$arrayGame['id_fase']." and (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and (eg.id_equipo = j.id_equipo_1 or eg.id_equipo = j.id_equipo_2 ) join grupo g on eg.id_grupo = g.id  join fase f on g.id_fase = f.id and eg.id_equipo = ".$equipog2['id_equipo']." and f.id = ".$arrayGame['id_fase']));
+    //actualizar partidos empates equipo_1:
+    $connect->query("update equipo_grupo set EMP = (".$empates1['total'].") where id =".$equipog1['id']);
+    //actualizar partidos empates equipo_2:
+    $connect->query("update equipo_grupo set EMP = (".$empates2['total'].") where id =".$equipog2['id']);
+    $partidosEmpatados1 = $empates1['total'];
+    $partidosEmpatados2 = $empates2['total'];
+    
+    //contar cuantos goles tiene hasta ahora el equipo_1 en el grupo de la fase:
+    $golesTotal1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g join juego j ON g.id_juego = j.id and j.id_fase = ".$arrayGame['id_fase']." and g.id_equipo = ".$equipog1['id_equipo']." join equipo_grupo eg on eg.id_equipo = g.id_equipo join grupo gr ON eg.id_grupo = gr.id and gr.id_fase =".$arrayGame['id_fase']));
+    //actualizar GAF equipo_1:
+    $connect->query("update equipo_grupo set GAF = (".$golesTotal1['total'].") where id =".$equipog1['id']);
+    
+    //contar cuantos goles tiene hasta ahora el equipo_2 en el grupo de la fase:
+    $golesTotal2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g join juego j ON g.id_juego = j.id and j.id_fase = ".$arrayGame['id_fase']." and g.id_equipo = ".$equipog2['id_equipo']." join equipo_grupo eg on eg.id_equipo = g.id_equipo join grupo gr ON eg.id_grupo = gr.id and gr.id_fase =".$arrayGame['id_fase']));
+    //actualizar GAF equipo_2:
+    $connect->query("update equipo_grupo set GAF = (".$golesTotal2['total'].") where id =".$equipog2['id']);
+    
+    //contar cuantos goles en contra tiene hasta ahora el equipo_1 en el grupo de la fase:
+    $golesContraTotal1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g  join equipo_grupo eg ON g.id_equipo = eg.id_equipo and g.id_equipo <> ".$equipog1['id_equipo']."  join grupo gr ON eg.id_grupo = gr.id and gr.id_fase = ".$arrayGame['id_fase']." and g.id_juego in(select id from juego where (id_equipo_1 = ".$equipog1['id_equipo']." or id_equipo_2 = ".$equipog1['id_equipo'].") and id_fase = ".$arrayGame['id_fase']." )" ));
+    //actualizar GEC equipo_1:
+    $connect->query("update equipo_grupo set GEC = (".$golesContraTotal1['total'].") where id =".$equipog1['id']);
+    
+    //contar cuantos goles en contra tiene hasta ahora el equipo_2 en el grupo de la fase:
+    $golesContraTotal2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g  join equipo_grupo eg ON g.id_equipo = eg.id_equipo and g.id_equipo <> ".$equipog2['id_equipo']."  join grupo gr ON eg.id_grupo = gr.id and gr.id_fase = ".$arrayGame['id_fase']." and g.id_juego in(select id from juego where (id_equipo_1 = ".$equipog2['id_equipo']." or id_equipo_2 = ".$equipog2['id_equipo'].") and id_fase = ".$arrayGame['id_fase'].")" ));
+    //actualizar GEC equipo_2:
+    $connect->query("update equipo_grupo set GEC = (".$golesContraTotal2['total'].") where id =".$equipog2['id']);
+    
+    //actualizar DIF equipo_1
+    $connect->query("update equipo_grupo set DIF = (".$golesTotal1['total']."-(".$golesContraTotal1['total'].")) where id =".$equipog1['id']);
+    
+    //actualizar DIF equipo_2
+    $connect->query("update equipo_grupo set DIF = (".$golesTotal2['total']."-".$golesContraTotal2['total'].") where id =".$equipog2['id']);
+    
+    //consultar pts por ganar competencia:
+    $ptsGanador = mysqli_fetch_array($connect->query( "select puntos_ganador from fase f join competicion c on f.id_competicion = c.id and f.id = ".$arrayGame['id_fase'] ));
+    
+    //consultar pts por empatar competencia:
+    $ptsEmpate = mysqli_fetch_array($connect->query( "select puntos_empate from fase f join competicion c on f.id_competicion = c.id and f.id = ".$arrayGame['id_fase'] ));
+    
+    //consultar pts por perder competencia:
+    $ptsPerdedor = mysqli_fetch_array($connect->query( "select puntos_perdedor from fase f join competicion c on f.id_competicion = c.id and f.id = ".$arrayGame['id_fase'] ));
+    
+    //calculo puntos equipo_1
+    $pts= 0;
+    $ptsG = $ptsGanador['puntos_ganador']*$partidosGanados1;
+    $ptsE = $ptsEmpate['puntos_empate']*$partidosEmpatados1;
+    $ptsP = $ptsPerdedor['puntos_perdedor']*$partidosPerdidos1;
+    
+    $pts = $ptsG+$ptsE+$ptsP;
+    //actualizar PTS equipo_1
+    $connect->query("update equipo_grupo set PTS = (".$pts.") where id =".$equipog1['id']);
+    
+    //calculo puntos equipo_2
+    $pts= 0;
+    $ptsG = $ptsGanador['puntos_ganador']*$partidosGanados2;
+    $ptsE = $ptsEmpate['puntos_empate']*$partidosEmpatados2;
+    $ptsP = $ptsPerdedor['puntos_perdedor']*$partidosPerdidos2;
+    
+    $pts = $ptsG+$ptsE+$ptsP;
+    //actualizar PTS equipo_2
+    $connect->query("update equipo_grupo set PTS = (".$pts.") where id =".$equipog2['id']);
 }
 if ( $action == 'addAbono' ) {
 	$esDescuento = 0;
@@ -1112,8 +1119,11 @@ if ( $action == 'clearInforme' ) {
 	$query = "update juego set informado=NULL, id_ganador=NULL, informe=NULL where id =".$idJuego;	
 	$result = $connect->query( $query );
 	
+	//Consultar Data de Juego:
+	$arrayGame =  mysqli_fetch_array( $connect->query( "select * from juego where id=".$idJuego));
+	
 	//recalcular puntuaciones de equipos:
-	updateTableGroup($idFase,$idJuego, true);	
+	updateTableGroup($arrayGame, true);	
 	
 	echo json_encode(array('error'=>false,'description'=>'Informe Restablecido con Exito'));
 }
