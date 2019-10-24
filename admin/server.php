@@ -714,7 +714,9 @@ if ( $action == 'delJuego' ) {
 	$result = $connect->query( $sql );
 	if( $result == 1){
 	    //recalcular tabla estadistica de equipos:
-	    updateTableGroup($arrayGame, false);
+		if(!empty($arrayGame['id_competicion']) && !empty($arrayGame['id_fase']) && !empty($arrayGame['id_grupo']) ){
+			updateTableGroup($arrayGame, false);
+		}
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
 	}else{
 		echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro'));
@@ -942,7 +944,7 @@ if ( $action == 'saveInforme' ) {
 	//Consultar Data de Juego:
 	$arrayGame =  mysqli_fetch_array( $connect->query( "select * from juego where id=".$idJuego));
 	//recalcular puntuaciones de equipos:
-	updateTableGroup($arrayGame, false);	
+	updateTableGroup($arrayGame, false);
 	echo json_encode(array('error'=>false,'description'=>'Informe Guardado y Tabla Actualizada'));	
 }
 function updateTableGroup( $arrayGame, $isClear ) {
