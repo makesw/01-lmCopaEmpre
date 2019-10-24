@@ -390,7 +390,7 @@ function genGames( idFase ){
 		idaYvuelta = 1;	
 	}
 	$.ajax( {
-		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
+		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta+'&idComp='+idComp,
 		type: 'POST',
 		data: new FormData(  ),
 		success: function ( data ) {
