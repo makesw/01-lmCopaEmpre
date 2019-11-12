@@ -31,18 +31,18 @@ if($competencia['nummxjug']!=null && $competencia['nummxjug']>0){
         $createPlayer = false;
     }
 }
+//2. Consultar la fecha máxima para la competecia
 $fechMax = $competencia["fech_max_pla"];
 if ( time() > strtotime($fechMax.'+23 hours') ){
     $createPlayer = false;
 }
 
-//2. Consultar cuantos juegos tiene el equipo en la competencia actual:
+//3. Consultar cuantos juegos tiene el equipo en la competencia actual:
 $juegos = mysqli_fetch_array($connect->query( "select count(1) total from juego j join fase f on j.id_fase = f.id and (j.id_equipo_1= ".$equipo['id']." or j.id_equipo_2=".$equipo['id'].") and (j.fecha <now() ) and j.informado=1 and f.id_competicion = ".$equipo['id_competicion']));
-
-//3. Solo hasta la fecha 4 se permite adicionar jugadores
-if($juegos['total'] >= 4){
+//Solo hasta la fecha 4 se permite adicionar jugadores
+/*if($juegos['total'] >= 4){
     $createPlayer = false;
-}
+}*/
 
 $date_max = 'No definida!'; 
 if(!empty($competencia["fech_max_pla"])){
