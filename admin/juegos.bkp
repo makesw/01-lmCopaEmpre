@@ -385,31 +385,28 @@ $(document).ready(function(){
    })
 });
 function genGames( idFase ){
-	if ( confirm( 'Confirma Generar o Actualizar Juegos ?' ) ) {
-    	idaYvuelta = 0;
-    	if($('input[name=checkIdaVuelta]:checked', '#formJuegos').val()){
-    		idaYvuelta = 1;	
-    	}
-    	var formData = new FormData();
-    	$.ajax( {
-    		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
-    		type: 'POST',
-    		data: formData,
-    		success: function ( data ) {
-    			//console.log( data );
-    			location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
-    		},
-    		error: function ( data ) {
-    			//console.log( data );
-    		},
-    		cache: false,
-    		contentType: false,
-    		processData: false
-    	} ); 
-	}	
+	idaYvuelta = 0;
+	if($('input[name=checkIdaVuelta]:checked', '#formJuegos').val()){
+		idaYvuelta = 1;	
+	}
+	$.ajax( {
+		url: 'server.php?action=genGames&idFase='+idFase+'&idaYvuelta='+idaYvuelta,
+		type: 'POST',
+		data: new FormData(  ),
+		success: function ( data ) {
+			//console.log( data );
+			location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
+		},
+		error: function ( data ) {
+			//console.log( data );
+		},
+		cache: false,
+		contentType: false,
+		processData: false
+	} ); 	
 }	
 function delJuegos( idFase ) {
-	if ( confirm( 'Esto es Peligroso!, Confirma Eliminar Juegos?' ) ) {
+	if ( confirm( 'Confirma Eliminar?' ) ) {
 		$.ajax( {
 			url: 'server.php?action=delJuegos&idFase=' + idFase,
 			type: 'POST',
@@ -540,19 +537,19 @@ function fnAddJuego() {
 }
 jQuery( document ).on( 'submit', '#formAddGame', function ( event ) {
 	if(arrSelectedTeam.length == 2){
-	    arrSelectedTeam.push(idFase);
+		arrSelectedTeam.push(idFase);
 		$.ajax({
 				type: "POST",
 				url: "server.php?action=addManualGame",
 				data:{ array : JSON.stringify(arrSelectedTeam) },
 				dataType: "json",
 				success: function (data) {
-					//console.log(data);
+					console.log(data);
 					arrSelectedTeam=[];
 					location.href = './juegos.php?idComp='+idComp+'&idFase='+idFase+'&jornada='+jornada;
 				},
 				error: function (data) {
-					//console.log(data);
+					console.log(data);
 				},
 			});		
 	}else{
@@ -563,7 +560,7 @@ jQuery( document ).on( 'submit', '#formAddGame', function ( event ) {
 function delGame( id ) {
 	if ( confirm( 'Confirma Eliminar?' ) ) {
 		$.ajax( {
-			url: 'server.php?action=delJuego&id=' + id,
+			url: 'server.php?action=delJuego&id='+ id+'&idFase='+idFase,
 			type: 'POST',
 			data: new FormData(  ),
 			success: function ( data ) {

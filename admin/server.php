@@ -897,8 +897,10 @@ if ( $action == 'addSan' ) {
 		$minuto_Sancion = $_GET["minutos"];
 		$tipoSancion = mysqli_fetch_array( $connect->query( "select * from tipo_sancion where id = ".$id_tipo_sancion ));
 		$juego = mysqli_fetch_array( $connect->query( "select * from juego where id = ".$_GET["idJuego"] ));
+		$jornada = $juego['jornada'];
+		if(empty($jornada)){$jornada=1;}
 		foreach ($array as &$valor) { //por cada id_jugador:			
-		    $query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$juego['jornada'].",'".$juego['fecha']."')";
+		    $query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$jornada.",'".$juego['fecha']."')";
 			$connect->query( $query );							
 			//validar vetar jugador:
 			if($tipoSancion['veta_jugador']){
