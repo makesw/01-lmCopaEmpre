@@ -10,7 +10,9 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
 require '../conexion.php';
 $iidFase = $_GET[ 'idFase' ];
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:null;
-$resultResultados = $connect->query( "select distinct j.id,id_equipo_1,nombre1,id_equipo_2,nombre2,fecha, g.nombre nombreGrupo from competicion c join fase f ON c.id = f.id_competicion AND c.id=".$idComp." AND f.id=".$iidFase." JOIN grupo g ON f.id = g.id_fase  AND g.id_fase=".$iidFase." JOIN equipo_grupo eg ON g.id = eg.id_grupo JOIN juego j ON (eg.id_equipo = j.id_equipo_1 OR eg.id_equipo = j.id_equipo_2) AND j.id_fase=".$iidFase." AND j.fecha is not null and j.informado =1 ORDER by nombreGrupo asc, j.fecha desc" );
+$resultResultados = $connect->query( "select distinct j.id, j.id_equipo_1,j.nombre1,j.id_equipo_2,nombre2, j.fecha, g.nombre nombreGrupo from juego j 
+join competicion c ON j.id_competicion = c.id and c.id = ".$idComp." AND j.fecha is not null and j.informado =1 
+join fase f on j.id_fase = f.id and f.id = ".$iidFase." left join grupo g on j.id_grupo = g.id ORDER by g.nombre asc, j.fecha desc" );
 
 setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');

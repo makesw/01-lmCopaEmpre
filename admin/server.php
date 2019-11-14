@@ -956,11 +956,18 @@ if ( $action == 'saveInforme' ) {
 }
 function updateTableGroup( $arrayGame, $isClear ) {
     require '../conexion.php';
-    //consultar equipo grupo actual equipo_1:    
-    $equipog1 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_1']." and id_grupo = ".$arrayGame['id_grupo'] ) );
-    //consultar equipo grupo actual equipo_2:
-    $equipog2 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_2']." and id_grupo = ".$arrayGame['id_grupo'] ) );
+    $equipog1;
+    $equipog2;
+    if( !empty($arrayGame['id_grupo'] )){
+        //consultar equipo grupo actual equipo_1:    
+        $equipog1 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_1']." and id_grupo = ".$arrayGame['id_grupo'] ) );
+        //consultar equipo grupo actual equipo_2:
+        $equipog2 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_2']." and id_grupo = ".$arrayGame['id_grupo'] ) );
     
+    }else{ //partido intergrupo, consultar último equipo grupo de cada equipo:
+        $equipog1 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_1']." order by id desc limit 1") );        
+        $equipog2 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_2']." order by id desc limit 1") );
+    }    
     //actualizar partidos jugados equipo_1:    
     $connect->query("UPDATE equipo_grupo SET JUG = ( select count(1) from juego where id_fase = ".$arrayGame['id_fase']." and informado = 1 and (id_equipo_1 = ".$equipog1['id_equipo']." or id_equipo_2 = ".$equipog1['id_equipo'].") ) where id =".$equipog1['id']);
     
@@ -968,9 +975,9 @@ function updateTableGroup( $arrayGame, $isClear ) {
     $connect->query("UPDATE equipo_grupo SET JUG = ( select count(1) from juego where id_fase = ".$arrayGame['id_fase']." and informado = 1 and (id_equipo_1 = ".$equipog2['id_equipo']." or id_equipo_2 = ".$equipog2['id_equipo'].") ) where id =".$equipog2['id']);
     
     //contar goles del juego para equipo_1    
-    $goles1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog1['id_equipo']));
+    $goles1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$arrayGame['id_equipo_1']));
     //contar goles del juego para equipo_2
-    $goles2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog2['id_equipo']));
+    $goles2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$arrayGame['id_equipo_2']));
     
     $partidosGanados1 = 0;
     $partidosPerdidos1 = 0;
