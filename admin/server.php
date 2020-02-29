@@ -251,7 +251,8 @@ if ( $action == 'addUpdEqui' ) {
 			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
 			$fotoEscudo = $targetPathFotoEsc;
 		}	
-		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto,url_escudo) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."','".$fotoEscudo."')";
+	
+		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."')";
 		$result = $connect->query( $query );
 		if( $result == 1){		
 			echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
@@ -276,23 +277,6 @@ if ( $action == 'addUpdEqui' ) {
 			if(!empty ($_FILES['foto']['name'])){
 				$query2 = "UPDATE equipo SET url_foto='".$foto."' WHERE id = ".$_POST[ "bthValId" ];
 				$result = $connect->query( $query2 );
-			}	
-		}
-		if( !empty ($_FILES['escudo']['name']) ){
-		    //Borrar escudo anterior de servidor:
-		    $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-		    if(!strpos($equipo['url_escudo'], 'default.png')){
-		        unlink($equipo[ 'url_escudo']);
-		    }			
-		    //Cargar nuevo escudo a Servidor:
-			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
-			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
-			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-			$fotoEscudo = $targetPathFotoEsc;			
-			//Actualizar nuevo escudo en BD:
-			if(!empty ($_FILES['escudo']['name'])){
-			    $query2 = "UPDATE equipo SET url_escudo='".$fotoEscudo."' WHERE id = ".$_POST[ "bthValId" ];
-			    $result = $connect->query( $query2 );
 			}	
 		}		
 		//Actualizar datos restantes de equipo:
@@ -319,10 +303,7 @@ if ( $action == 'delEqui' ) {
 	$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$id));
 	if(!strpos($equipo['url_foto'], 'default.png')){
 	    unlink($equipo[ 'url_foto']);
-	}
-	if(!strpos($equipo['url_escudo'], 'default.png')){
-	    unlink($equipo[ 'url_escudo']);
-	}	
+	}		
 	$result = $connect->query( "DELETE FROM equipo WHERE id=".$id );
 	if( $result == 1){	    
 		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
