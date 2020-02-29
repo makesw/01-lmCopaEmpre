@@ -233,27 +233,25 @@ if ( $action == 'addUpdEqui' ) {
 	$bthAction = 0;
 	$idComp = 0;
 	$foto = '../images/fotosEquipos/default.png';
-	$fotoEscudo = '../images/fotosEscudo/default.png';
+	$fotoEscudo = '../images/fotosEscudos/default.png';
 	if(isset($_POST[ "bthAction"])){$bthAction=$_POST[ "bthAction" ];}
 	if(isset($_POST[ "cmbComp"])){$idComp=$_POST[ "cmbComp" ];}
 	if( $bthAction == 1 ){ //insert data
-		$foto;
 		if( !empty ($_FILES['foto']['name']) ){
 			//Upload foto:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
 			$targetPathFoto = "../images/fotosEquipos/".$_POST[ 'nombre' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
 			$foto = $targetPathFoto;
-			
-			if( !empty ($_FILES['escudo']['name']) ){
-			   	//Upload escudo:
-    			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
-    			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
-    			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-    			$fotoEscudo = $targetPathFotoEsc;
-			}
+		}
+		if( !empty ($_FILES['escudo']['name']) ){
+		    //Upload escudo:
+		    $sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
+			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
+			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
+			$fotoEscudo = $targetPathFotoEsc;
 		}	
-		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."')";
+		$query = "INSERT INTO equipo (nombre,color,id_usuario,fecha, id_competicion,url_foto,url_escudo) VALUES ('" . $_POST[ "nombre" ] ."','".$_POST[ "color" ]."','".$_POST[ "cmbUser" ]."'"." ,NOW() ,".$idComp.",'".$foto."','".$fotoEscudo."')";
 		$result = $connect->query( $query );
 		if( $result == 1){		
 			echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
@@ -264,42 +262,44 @@ if ( $action == 'addUpdEqui' ) {
 		$foto;
 		$fotoEscudo;
 		if( !empty ($_FILES['foto']['name']) ){
-			//Upload foto:
+		    //Borrar foto anterior de servidor:
+		    $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
+		    if(!strpos($equipo['url_foto'], 'default.png')){
+		        unlink($equipo[ 'url_foto']);
+		    }						
+			//Cargar nueva foto a Servidor:
 			$sourcePathFoto = $_FILES['foto']['tmp_name'];		
 			$targetPathFoto = "../images/fotosEquipos/".$_POST[ 'nombre' ].date("YmdHms").".png"; 
 			move_uploaded_file($sourcePathFoto,$targetPathFoto) ;
-			$foto = $targetPathFoto;
-			//Delete old foto from server:
-			$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-			if(!strpos($equipo['url_foto'], 'default.png')){
-				unlink($equipo[ 'url_foto']);
-			}
-			//update foto:		
+			$foto = $targetPathFoto;			
+			//Actualizar nueva foto en BD:		
 			if(!empty ($_FILES['foto']['name'])){
 				$query2 = "UPDATE equipo SET url_foto='".$foto."' WHERE id = ".$_POST[ "bthValId" ];
 				$result = $connect->query( $query2 );
 			}	
-			
-			//Upload foto:
+		}
+		if( !empty ($_FILES['escudo']['name']) ){
+		    //Borrar escudo anterior de servidor:
+		    $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
+		    if(!strpos($equipo['url_escudo'], 'default.png')){
+		        unlink($equipo[ 'url_escudo']);
+		    }			
+		    //Cargar nuevo escudo a Servidor:
 			$sourcePathFotoEsc = $_FILES['escudo']['tmp_name'];
 			$targetPathFotoEsc = "../images/fotosEscudos/".$_POST[ 'nombre' ].date("YmdHms").".png";
 			move_uploaded_file($sourcePathFotoEsc,$targetPathFotoEsc) ;
-			$fotoEscudo = $targetPathFotoEsc;
-			//Delete old foto from server:
-			$equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_POST[ "bthValId" ] ));
-			if(!strpos($equipo['url_escudo'], 'default.png')){
-			    unlink($equipo[ 'url_escudo']);
-			}
-			//update foto:
+			$fotoEscudo = $targetPathFotoEsc;			
+			//Actualizar nuevo escudo en BD:
 			if(!empty ($_FILES['escudo']['name'])){
 			    $query2 = "UPDATE equipo SET url_escudo='".$fotoEscudo."' WHERE id = ".$_POST[ "bthValId" ];
 			    $result = $connect->query( $query2 );
 			}	
 		}		
+		//Actualizar datos restantes de equipo:
 		$query = "UPDATE equipo SET nombre='".$_POST["nombre"]."',color='".$_POST["color"]."',id_usuario='".$_POST[ "cmbUser" ]."',id_competicion=".$idComp." WHERE id = ".$_POST[ "bthValId" ];
-		$result = $connect->query( $query );
+		$result = $connect->query( $query );		
 		if( $result == 1){		
-			//update juego:
+			//Se debe actualizar nombre de equipo en juegos:
 			$result = $connect->query( "UPDATE juego SET nombre1='".$_POST["nombre"]."' WHERE id_equipo_1 = ".$_POST[ "bthValId" ] );
 			$result = $connect->query( "UPDATE juego SET nombre2='".$_POST["nombre"]."' WHERE id_equipo_2 = ".$_POST[ "bthValId" ] );
 			echo json_encode(array('error'=>false,'description'=>'Registro Actualizado'));
@@ -432,8 +432,13 @@ if ( $action == 'delEquiGru' ) {
 if ( $action == 'genGames' ) {	
 	$idFase = $_GET[ 'idFase' ];
 	$idaYvuelta = $_GET[ 'idaYvuelta' ];
+	$idComp = $_GET[ 'idComp' ];
 	$resultGrupos = $connect->query( "select g.* from grupo g JOIN fase f ON g.id_fase = f.id AND f.id = ".$idFase." order by nombre asc" );
-	while($rowGru = mysqli_fetch_array($resultGrupos)){
+	
+	//eliminar juegos de la fase y que no esten informados:
+	$connect->query( "delete from juego where id_fase = ".$idFase." and informado is null and fecha is null" );
+	//volver a generar juegos de la fase
+	while($rowGru = mysqli_fetch_array($resultGrupos)){	    	    
 		//quipos del grupo:
 		$resultEquipos = $connect->query( "select id_equipo from equipo_grupo eg JOIN equipo e ON eg.id_equipo = e.id WHERE eg.id_grupo =".$rowGru['id'] );
 		//Generar Array Equipos:
@@ -495,7 +500,7 @@ if ( $action == 'genGames' ) {
 					if( $juegoExiste['total'] < 1 ){	//el juego no existe se crea:
 						$local = mysqli_fetch_array($connect->query("select * from equipo where id = ".$idsEquipos[0]));
 						$visitante = mysqli_fetch_array($connect->query("select * from equipo where id = ".$idsEquipos[1]));
-						$query = "INSERT INTO juego (id_equipo_1,nombre1,id_equipo_2,nombre2, tipo,id_grupo, id_fase, jornada) VALUES (".$local['id'].",'".$local['nombre']."',".$visitante['id'].",'".$visitante['nombre']."','OFICIAL',".$rowGru['id'].",".$idFase.",".($fila+1).")";
+						$query = "INSERT INTO juego (id_equipo_1,nombre1,id_equipo_2,nombre2, tipo,id_grupo, id_fase, jornada,id_competicion) VALUES (".$local['id'].",'".$local['nombre']."',".$visitante['id'].",'".$visitante['nombre']."','OFICIAL',".$rowGru['id'].",".$idFase.",".($fila+1).",".$idComp.")";
 						$result = $connect->query( $query );
 					}
 				}
@@ -892,8 +897,10 @@ if ( $action == 'addSan' ) {
 		$minuto_Sancion = $_GET["minutos"];
 		$tipoSancion = mysqli_fetch_array( $connect->query( "select * from tipo_sancion where id = ".$id_tipo_sancion ));
 		$juego = mysqli_fetch_array( $connect->query( "select * from juego where id = ".$_GET["idJuego"] ));
+		$jornada = $juego['jornada'];
+		if(empty($jornada)){$jornada=1;}
 		foreach ($array as &$valor) { //por cada id_jugador:			
-		    $query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$juego['jornada'].",'".$juego['fecha']."')";
+		    $query = "INSERT INTO sancion (id_jugador,id_juego,minuto,id_tipo_sancion,jornada_sancion, fecha) VALUES (".$valor.",".$juego['id'].",".$minuto_Sancion.",".$id_tipo_sancion.",".$jornada.",'".$juego['fecha']."')";
 			$connect->query( $query );							
 			//validar vetar jugador:
 			if($tipoSancion['veta_jugador']){
@@ -949,18 +956,18 @@ if ( $action == 'saveInforme' ) {
 }
 function updateTableGroup( $arrayGame, $isClear ) {
     require '../conexion.php';
-    //consultar equipo grupo actual equipo_1:
+    //consultar equipo grupo actual equipo_1:    
     $equipog1 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_1']." and id_grupo = ".$arrayGame['id_grupo'] ) );
     //consultar equipo grupo actual equipo_2:
     $equipog2 = mysqli_fetch_array( $connect->query( "select * from equipo_grupo where id_equipo = ".$arrayGame['id_equipo_2']." and id_grupo = ".$arrayGame['id_grupo'] ) );
     
-    //actualizar partidos jugados equipo_1:
-    $connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog1['id_equipo']." or j.id_equipo_2 = ".$equipog1['id_equipo'].") and j.id_fase = ".$arrayGame['id_fase']."  AND eg.id_equipo = ".$equipog1['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'].") AS x) where id =".$equipog1['id']);
+    //actualizar partidos jugados equipo_1:    
+    $connect->query("UPDATE equipo_grupo SET JUG = ( select count(1) from juego where id_fase = ".$arrayGame['id_fase']." and informado = 1 and (id_equipo_1 = ".$equipog1['id_equipo']." or id_equipo_2 = ".$equipog1['id_equipo'].") ) where id =".$equipog1['id']);
     
     //actualizar partidos jugados equipo_2:
-    $connect->query("UPDATE equipo_grupo SET JUG = ( SELECT x.cant FROM (select count(1) as cant from juego j join equipo_grupo eg ON (j.id_equipo_1 = ".$equipog2['id_equipo']." or j.id_equipo_2 = ".$equipog2['id_equipo'].") and j.id_fase = ".$arrayGame['id_fase']." AND eg.id_equipo = ".$equipog2['id_equipo']." and j.informado is not null join grupo g  On eg.id_grupo = g.id join fase f on g.id_fase = f.id and f.id = ".$arrayGame['id_fase'].") AS x) where id =".$equipog2['id']);
+    $connect->query("UPDATE equipo_grupo SET JUG = ( select count(1) from juego where id_fase = ".$arrayGame['id_fase']." and informado = 1 and (id_equipo_1 = ".$equipog2['id_equipo']." or id_equipo_2 = ".$equipog2['id_equipo'].") ) where id =".$equipog2['id']);
     
-    //contar goles del juego para equipo_1
+    //contar goles del juego para equipo_1    
     $goles1 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog1['id_equipo']));
     //contar goles del juego para equipo_2
     $goles2 = mysqli_fetch_array($connect->query( "select ifnull(sum(g.valor),0) total from gol g where g.id_juego = ".$arrayGame['id']." and g.id_equipo =".$equipog2['id_equipo']));

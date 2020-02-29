@@ -1,0 +1,10 @@
+[08-Feb-2020 21:10:55 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 148
+[08-Feb-2020 21:12:28 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[16-Feb-2020 02:34:16 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[16-Feb-2020 02:47:19 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 148
+[23-Feb-2020 01:14:06 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[23-Feb-2020 01:15:03 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[23-Feb-2020 01:17:13 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 148
+[23-Feb-2020 01:46:42 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[23-Feb-2020 01:46:42 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
+[23-Feb-2020 01:46:42 UTC] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, boolean given in /home/copaempre/public_html/lmcopaemprendedores/colaborator/genPlanilla.php on line 111
