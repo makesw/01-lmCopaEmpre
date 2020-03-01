@@ -8,14 +8,11 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     }
 }
 require '../conexion.php';
-$resultCompetencias = $connect->query( "select * from competicion WHERE activa=1  order by nombre asc" );
-$idComp=0;
-$idFase=0;
+$resultCompetencias = $connect->query( "select * from competicion WHERE activa=1 and (id_parent is null or id_parent= 0) order by nombre asc" );
+$resultTipoPagos = $connect->query( "select * from tipo_pago where id <> 1 order by nombre asc" );
+$idCompRld=0;
 if(isset($_GET[ 'idComp' ])){
-	$idComp = $_GET[ 'idComp' ];
-}
-if(isset($_GET[ 'idFase' ])){
-	$idFase = $_GET[ 'idFase' ];
+	$idCompRld = $_GET[ 'idComp' ];
 }
 
 header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -29,7 +26,6 @@ header('Pragma: no-cache');
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta http-equiv="cache-control" content="no-cache" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="Mouldifi - A fully responsive, HTML5 based admin theme">
 	<meta name="keywords" content="Responsive, HTML5, admin theme, business, professional, Mouldifi, web design, CSS3">
@@ -55,6 +51,8 @@ header('Pragma: no-cache');
 	<!-- /mouldifi core stylesheet -->
 
 	<link href="../css/mouldifi-forms.css" rel="stylesheet">
+	<link href="../css/plugins/datatables/jquery.dataTables.css" rel="stylesheet">
+<link href="../js/plugins/datatables/extensions/Buttons/css/buttons.dataTables.css" rel="stylesheet">
 
 	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -91,53 +89,52 @@ header('Pragma: no-cache');
 					<li class="profile-info dropdown"><a data-toggle="dropdown" class="dropdown-toggle" href="#" aria-expanded="false"> <img width="44" class="img-circle avatar" alt="" src="<?php echo $_SESSION['dataSession']['url_foto'];?>"><?php echo $_SESSION['dataSession']['nombres'].' '.$_SESSION['dataSession']['apellidos'] ?></a>
 
 			</div>
-
-
 			<div class="col-sm-6 col-xs-5">
 				<div class="pull-right">
 					<a title="Salir" href="../salir.php"><img src="../images/btn-close.png" style="height: 30px;widows: 30px;" /></a>
 				</div>
 			</div>
-
 		</div>
 		<!-- /main header -->
 
 		<!-- Main content -->
 		<div class="main-content">
-			<h1 class="page-title">Administración / Equipos * Grupo</h1>
+			<form id="formJuegos">
+			<h1 class="page-title">Administración / Otros Pagos</h1>
 			<div class="row">			
 			<div class="col-lg-12">
-				<div class="panel panel-default">				
+				<div class="panel panel-default">
+				<div class="panel-heading clearfix">
 					<div class="panel-body">
-						<form>
-							  <div class="form-group">
-								<label for="emailaddress">Competición</label>
-								<select class="form-control" required id="cmbComp" name="cmbComp"> 
-									<option value="">Seleccione una competencia</option><?php
-									while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
-										echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
-									}
-									?> 
-								</select>
-							  </div>
-							  <div class="form-group">
-								<label for="password">Fase</label>
-								<select class="form-control" required id="cmbFase" name="cmbFase">
-								</select>
-							  </div>							  
-						</form>							
+						  <div class="form-group">
+							<label for="emailaddress">Competición</label>
+							<select class="form-control" required id="cmbComp" name="cmbComp"> 
+								<option value="0">Seleccione una competencia</option><?php
+								while ( $row = mysqli_fetch_array( $resultCompetencias ) ) {
+									echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
+								}
+								?> 
+							</select>
+						  </div>				
 					</div>
 				</div>			
 				
 			</div>
 			</div>	
-			<h1 class="page-title">Grupos</h1>		
+			<h1 class="page-title">Listado de pagos por equipo:</h1>		
 			<div class="row">
-				<div id="divGroupContent"></div>
-			</div>			
+			<div class="col-lg-12">
+				<div class="class="panel panel-minimal"t">
+					<div class="panel-body">
+						<div id="divPagosContent"></div>						
+					</div>
+				</div>
+			</div>
+			</div>		
 			<!-- Footer -->
 			<?php include("./footer.html");?>
 			<!-- /footer -->
+			</form>
 		</div>
 		<!-- /main content -->
 
@@ -145,22 +142,54 @@ header('Pragma: no-cache');
 	<!-- /main container -->
 
 </div>
-<!-- /page container -->
+<!-- /page container -->	
 
-<div id="modal-asoc-equi" class="modal fade" tabindex="-1" role="dialog">
-	<div class="modal-dialog modal-lg">
+<div id="modal-pag" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">Agregar Equipo a Grupo</h4>
+				<h4 class="modal-title"><div id="title-regAbono">Pago</div></h4>
 			</div>
 			<div class="modal-body">
-				<form id="formAddEquiGru" method="post">
-					<div class="table-responsive" id="tbodyAddEquiGru">
-						
+				<form class="form-horizontal" id="formRegistrarAbono" method="post">					
+					<div class="form-group"> 
+						<label class="col-sm-2 control-label" for="nombre">Fecha</label> 
+						<div class="col-sm-10"> 
+							<input type="date" name="fecha" id="fecha" required>
+						 </div> 
+					</div>	
+					<div class="form-group"> 
+						<label class="col-sm-2 control-label" for="nombre">Valor $</label> 
+						<div class="col-sm-10"> 
+							<input type="number" placeholder="$valor" id="valor" name="valor" class="form-control"  required>
+						</div> 
 					</div>
-					<input type="hidden" id="idGrupHid" name="idGrupHid" value="" />
-					<button type="submit" class="btn btn-primary">Agregar</button> 
+					<div class="form-group"> 
+						<label class="col-sm-2 control-label" for="nombre">Tipo de Pago</label> 
+						<div class="col-sm-10"> 
+							<select class="form-control" required id="cmbTipoPago" name="cmbTipoPago">
+    							<?php while ( $row = mysqli_fetch_array( $resultTipoPagos ) ) {
+    								echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
+    							}
+    							?> 
+							</select>
+						</div> 
+					</div>
+					<div class="form-group"> 
+						<label class="col-sm-2 control-label" for="nombre">Descripción</label> 
+						<div class="col-sm-10"> 
+							<input type="text" placeholder="Detalle" id="detalle" name="detalle" class="form-control">
+						</div> 
+					</div>
+					<div class="form-group"> 
+						<div class="col-sm-offset-2 col-sm-10"> 
+							<button type="submit" class="btn btn-primary">Guardar</button> 
+						</div> 
+					</div> 
+					<input type="hidden" id="hdIdEqui" name="hdIdEqui" value="" />
+					<input type="hidden" id="hdIdComp" name="hdIdComp" value="" />
+					<input type="hidden" id="hdIdDto" name="hdIdDto" value="" />
 				</form>
 			</div>
 		</div>
@@ -168,24 +197,6 @@ header('Pragma: no-cache');
 	</div>
 	<!-- /.modal-dialog -->
 </div>
-<div id="modal-alert" class="modal fade" tabindex="-1" role="dialog">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title">Alerta!</h4>
-			</div>
-			<div class="modal-body">
-				<form id="formSede" method="post">
-					<div class="panel-body">
-						<div class="alert alert-danger" role="alert"><strong>Alerta!</strong> <p id="textAlert"></p></div>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-</div>
-
 <!--Load JQuery-->
 <script src="../js/jquery.min.js"></script>
 <script src="../js/bootstrap.min.js"></script>
@@ -202,37 +213,41 @@ header('Pragma: no-cache');
 <script src="../js/plugins/datatables/vfs_fonts.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.html5.js"></script>
 <script src="../js/plugins/datatables/extensions/Buttons/js/buttons.colVis.js"></script>
+<script src="../js/plugins/datatables/extensions/Buttons/js/dataTables.buttons.min.js"></script>
+<script src="../js/plugins/datatables/jszip.min.js"></script>
+<script src="../js/plugins/datatables/pdfmake.min.js"></script>
+<script src="../js/plugins/datatables/vfs_fonts.js"></script>
 </body>
 </html>
 <script>
-idComp=<?php echo($idComp); ?>;
-idFase=<?php echo($idFase); ?>;
-paginationTable = false;
+
 $(document).ready(function(){
    $("#cmbComp").change(function () {
-   		$("#cmbComp option:selected").each(function () {
-            elegido=$(this).val();
-			idComp = elegido;
-            $.post("ajaxFases.php", { elegido: elegido }, function(data){
-            $("#cmbFase").html(data);
-            });            
-        });
-   })
-});
-$(document).ready(function(){
-   $("#cmbFase").change(function () {
-	  idFase = $(this).val();
-   	 $("#divGroupContent").load('ajaxGrupos.php?idFase='+this.value);
+	 idCompSel = $(this).val();
+	 $("#divPagosContent").load('ajaxPagosGestion.php?opt=1&idComp='+idCompSel); 
    })
 });	
-jQuery( document ).on( 'submit', '#formCreateEqui', function ( event ) {
+function fnAddPago( idEquipo ) {
+	$("#hdIdComp").val($("#cmbComp").val());
+	$("#hdIdEqui").val(idEquipo);
+	$("#title-regAbono").text("Registrar Abono");
+	$('#modal-pag').modal('show');
+}
+function fnAddDto( idEquipo ) {
+	$("#hdIdComp").val($("#cmbComp").val());
+	$("#hdIdEqui").val(idEquipo);
+	$("#hdIdDto").val(1);	
+	$("#title-regAbono").text("Registrar Descuento");	
+	$('#modal-pag').modal('show');
+}
+jQuery( document ).on( 'submit', '#formRegistrarAbono', function ( event ) {
 	$.ajax( {
-		url: 'server.php?action=addUpdEqui',
+		url: 'server.php?action=addAbono',
 		type: 'POST',
 		data: new FormData( this ),
 		success: function ( data ) {
 			//console.log( data );
-			location.href = './equipos.php';
+			location.href = './pagos.php?idComp='+$("#cmbComp").val();
 		},
 		error: function ( data ) {
 			//console.log( data );
@@ -243,91 +258,21 @@ jQuery( document ).on( 'submit', '#formCreateEqui', function ( event ) {
 	} );
 	return false;
 } );
-function editEqui( id ) {
-	$.ajax( {
-			url: 'server.php?action=getDataEqui&id=' + id,
+idCompRld=<?php echo($idCompRld); ?>;
+if( idCompRld != 0 ){
+	$("#cmbComp").val(idCompRld);
+	$("#divPagosContent").load('ajaxPagosGestion.php?opt=1&idComp='+idCompRld); 
+}
+function delDctos( idEquipo, idComp ) {
+	if ( confirm( 'Confirma Eliminar?' ) ) {
+		$.ajax( {
+			url: 'server.php?action=delDtos&idEquipo='+idEquipo+'&idComp='+idComp,
 			type: 'POST',
 			data: new FormData(  ),
 			success: function ( data ) {
-				//console.log(data);
-				$("#bthAction").val(2);
-				$("#bthValId").val(data.id);
-				$("#nombre").val(data.nombre);
-				$("#color").val(data.color);
-				if(data.activa == 1){
-					$("#activa").prop("checked", true);
-				}else{
-					$("#activa").prop("checked", false);
-				}				
-				$('#modal-equi').modal('show');
-			},
-			error: function ( data ) {
 				//console.log( data );
-			},
-			cache: false,
-			contentType: false,
-			processData: false
-		} );
-}
-function addEquToGru( idGrupo ){
-	$.post("ajaxPosiciones.php?grue=1&idComp="+idComp+"&idGrupo="+idGrupo+"&idFase="+idFase, { idFase: idFase }, function(data){
-		//console.log(data);
-		$("#tbodyAddEquiGru").html(data);
-		if(!paginationTable){
-			$('.dataTables-addEquiGru').DataTable({
-				"searching": true,
-				"bLengthChange": false,
-				"bInfo": false,
-				"pageLength": 10
-			});
-		}
-		paginationTable = true;
-	}); 	
-	$("#idGrupHid").val(idGrupo);
-	$('#modal-asoc-equi').modal('show');
-}	
-jQuery( document ).on( 'submit', '#formAddEquiGru', function ( event ) {
-	$.ajax( {
-		url: 'server.php?action=addEquiGru',
-		type: 'POST',
-		data: new FormData( this ),
-		success: function ( data ) {
-			//console.log( data );
-			location.href = './grupos_equipos.php?idComp='+idComp+'&idFase='+idFase;
-		},
-		error: function ( data ) {
-			//console.log( data );
-		},
-		cache: false,
-		contentType: false,
-		processData: false
-	} );
-	return false;
-} );
-if( idComp != null ){
-	$("#cmbComp").val(idComp);
-	 $.post("ajaxFases.php", { elegido: idComp }, function(data){
-	$("#cmbFase").html(data);
-	$("#cmbFase").val(idFase);
-	});
-	$("#divGroupContent").load('ajaxGrupos.php?idFase='+idFase);
-	
-}
-function delEquiGru( id ) {
-	var formData = new FormData();
-	if ( confirm( 'Confirma Eliminar?' ) ) {
-		$.ajax( {
-			url: 'server.php?action=delEquiGru&id=' + id,
-			type: 'POST',
-			data: formData,
-			success: function ( data ) {
-				//console.log( data );
-				if(!data.error){
-					location.href = './grupos_equipos.php?idComp='+idComp+'&idFase='+idFase;
-				}else{
-					$('#textAlert').text(data.description);
-					$('#modal-alert').modal('show');	
-				}
+				location.href = './pagos.php?idComp='+idComp;
+				//location.reload();
 			},
 			error: function ( data ) {
 				//console.log( data );
@@ -338,5 +283,50 @@ function delEquiGru( id ) {
 		} );
 	}
 }
+function delPago( id ) {
+	if ( confirm( 'Confirma Eliminar?' ) ) {
+		$.ajax( {
+			url: 'server.php?action=delPago&id='+id,
+			type: 'POST',
+			data: new FormData(  ),
+			success: function ( data ) {
+				console.log( data );
+				location.reload();
+			},
+			error: function ( data ) {
+				console.log( data );
+			},
+			cache: false,
+			contentType: false,
+			processData: false
+		} );
+	}
+}	
+</script>
+<script>
+$(document).ready(function () {
+$('.dataTables-pagos').DataTable({
+	"searching": true,
+	"bSort" : false,
+	"bLengthChange": false,
+	"bInfo": false,
+	"pageLength": 20,
+	dom: '<"html5buttons" B>lTfgitp',
+		buttons: [				
+			{
+				extend: 'excelHtml5',
+				exportOptions: {
+					columns: ':visible'
+				}
+			},
+			{
+				extend: 'pdfHtml5',
+				exportOptions: {
+					columns: ':visible'
+				}
+			}
+		]
+});
+});
 </script>
 <?php $connect->close(); ?>

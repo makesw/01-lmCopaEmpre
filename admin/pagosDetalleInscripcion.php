@@ -8,8 +8,7 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
     }
 }
 require '../conexion.php';
-//las del ultimo año:
-$resultPagos = $connect->query( "select * from pago where pago.id_equipo = ".$_GET[ 'idEqui' ]." and id_competicion = ".$_GET[ 'id_comp' ]." and (descuento is null or descuento =0) and UPPER(detalle) not like '%INSCRIP%'  order by fecha desc" );
+$resultPagos = $connect->query( "select * from pago where pago.id_equipo = ".$_GET[ 'idEqui' ]." and id_competicion = ".$_GET[ 'id_comp' ]." and (id_tipo_pago = 1 or UPPER(detalle) like '%INSCRIP%' ) order by fecha desc" );
 $equipo = mysqli_fetch_array($connect->query( "select * from equipo WHERE id=".$_GET[ 'idEqui' ] ));
 $competicion = mysqli_fetch_array($connect->query( "select * from competicion WHERE id=".$_GET[ 'id_comp' ] ));
 
@@ -51,16 +50,10 @@ header('Pragma: no-cache');
 
 	<link href="../css/mouldifi-forms.css" rel="stylesheet">
 
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-	<!--[if lt IE 9]>
-      <script src="../../js/html5shiv.min.js"></script>
-      <script src="../../js/respond.min.js"></script>
-<![endif]-->
-
-	<!--[if lte IE 8]>
-	<script src="../../js/plugins/flot/excanvas.min.js"></script>
-<![endif]-->
+	<link href="../css/mouldifi-forms.css" rel="stylesheet">
+	<link href="../css/plugins/datatables/jquery.dataTables.css" rel="stylesheet">
+	<link href="../js/plugins/datatables/extensions/Buttons/css/buttons.dataTables.css" rel="stylesheet">
+	
 </head>
 
 <body>
@@ -99,7 +92,7 @@ header('Pragma: no-cache');
 
 		<!-- Main content -->
 		<div class="main-content">
-			<h1 class="page-title">Administración / <a href="otrosPagos.php?opt=1&idComp=<?php echo $competicion['id']; ?>">Pagos</a> / Detalle</h1>
+			<h1 class="page-title">Administración / <a href="pagosInscripcion.php?opt=1&idComp=<?php echo $competicion['id']; ?>">Pagos Inscripción</a> / Detalle</h1>
 			<div class="row">
 			
 			<div class="col-lg-12">
@@ -109,12 +102,12 @@ header('Pragma: no-cache');
 					</div>
 					<div class="panel-body">					
 						<div class="table-responsive">
-					<table class="table table-users table-bordered table-hover dataTables-pagos" >
+					<table class="table table-striped table-bordered table-hover dataTables-pagos" >
 						<thead>
 							<tr>								
 								<th>Valor</th>
 								<th>Fecha</th>
-								<th>Tipo</th>
+								<th>Tipo Pago</th>
 								<th>Descripción</th>
 								<th></th>
 							</tr>
@@ -189,7 +182,7 @@ $('.dataTables-pagos').DataTable({
 		buttons: [				
 			{
 				extend: 'excelHtml5',
-				title: '<?php echo 'Lista Pagos '.$equipo['nombre']; ?>',
+				title: '<?php echo 'DetallePagosInscripcion'.$equipo['nombre']; ?>',
 				exportOptions: {
 					columns: [ 0, 1, 2 ]
 				}
@@ -209,7 +202,7 @@ $('.dataTables-pagos').DataTable({
 function delPago( idAbono ) {
 	if ( confirm( 'Confirma Eliminar?' ) ) {
 		$.ajax( {
-			url: 'server.php?action=delAbono&idAbono='+idAbono,
+			url: 'server.php?action=delPago&id='+idAbono,
 			type: 'POST',
 			data: new FormData(  ),
 			success: function ( data ) {

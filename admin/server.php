@@ -399,16 +399,18 @@ if ( $action == 'addEquiGru' ) {
 }
 if ( $action == 'delEquiGru' ) {	
     $idComp = $_GET[ 'idComp' ];
+    $idFase = $_GET[ 'idFase' ];
 	$id = $_GET[ 'id' ];
-    //validate juegos:
-    $juego = mysqli_fetch_array($connect->query( "select count(1) total from juego where id_competicion = ".$idComp." and ( id_equipo_1 = (select id_equipo  FROM equipo_grupo WHERE id= ".$id." limit 1) OR id_equipo_2=(select id_equipo  FROM equipo_grupo WHERE id= ".$id." limit 1) )" ));
-	if( $juego['total']<1 ){
-		$sql = "DELETE FROM equipo_grupo WHERE id=".$id;	
-		$result = $connect->query( $sql );
-		echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
-	}else{
-		echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro, Ya tiene juegos asignados'));
-	}
+	$result = 0;
+	//consultar equipo_grupo:
+	$equipoGrupo = mysqli_fetch_array($connect->query("select * from equipo_grupo where id=".$id));
+	//eliminar jeugos:
+	$connect->query("delete from juego where id_competicion = ".$idComp." and id_fase = ".$idFase." and 
+    id_grupo = ".$equipoGrupo['id_grupo']." and (id_equipo_1 = ".$equipoGrupo['id_equipo']." or id_equipo_2 = ".$equipoGrupo['id_equipo'].")");
+	//eliminar equipo_grupo:
+	$connect->query("delete from equipo_grupo where id=".$id);
+	
+	echo json_encode(array('error'=>false,'description'=>'Registros Eliminado'));
 }
 if ( $action == 'genGames' ) {	
 	$idFase = $_GET[ 'idFase' ];
@@ -1071,13 +1073,13 @@ if ( $action == 'addAbono' ) {
 	$esDescuento = 0;
 	if(isset($_POST['hdIdDto']) && $_POST['hdIdDto']==1){
 		$esDescuento = 1;	
-	}
-	$query = "INSERT INTO pago (id_equipo,abono,fecha,id_competicion, descuento, detalle) VALUES (".$_POST['hdIdEqui'].",".$_POST['valor'].",'".$_POST['fecha']."',".$_POST['hdIdComp'].",".$esDescuento.",'".$_POST['detalle']."')";
+	}	
+	$query = "INSERT INTO pago (id_equipo,abono,fecha,id_competicion, descuento, detalle, id_tipo_pago) VALUES (".$_POST['hdIdEqui'].",".$_POST['valor'].",'".$_POST['fecha']."',".$_POST['hdIdComp'].",".$esDescuento.",'".$_POST['detalle']."',1)";
 	$connect->query( $query );	
 	echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
 }
-if ( $action == 'delAbono' ) {
-	$query = "delete from pago where id = ".$_GET['idAbono'];
+if ( $action == 'delPago' ) {
+	$query = "delete from pago where id = ".$_GET['id'];
 	$connect->query( $query );	
 	echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
 }
@@ -1188,6 +1190,36 @@ if ( $action == 'saveTemplateCarnet' ) {
    $connect->query( $query );
 
     echo json_encode(array('error'=>false,'description'=>'Template Actualizada'));
+}
+
+if ( $action == 'addTipoPago' ) {
+    $query = "INSERT INTO tipo_pago ( nombre ) VALUES
+		(   '" . $_POST[ "nombre" ] . "')";
+    $result = $connect->query( $query );
+    if( $result == 1){
+        echo json_encode(array('error'=>false,'description'=>'Registro Creado'));
+    }else{
+        echo json_encode(array('error'=>true,'description'=>'No se pudo Crear Registro'));
+    }
+}
+if ( $action == 'delTipoPago' ) {
+    $id = $_GET[ 'idTipoPago' ];
+    $sql = "DELETE from tipo_pago WHERE id=".$id;
+    $result = $connect->query( $sql );
+    if( $result == 1){
+        echo json_encode(array('error'=>false,'description'=>'Registro Eliminado'));
+    }else{
+        echo json_encode(array('error'=>true,'description'=>'No se pudo Eliminar Registro'));
+    }
+}
+if ( $action == 'getDataTipoPago' ) {
+    $id = $_GET[ 'idTipoPago' ];
+    $tipoPago = mysqli_fetch_array( $connect->query( "SELECT * FROM tipo_pago WHERE id=".$id ));
+    echo json_encode(array('id'=>$tipoPago['id'],'nombre'=>$tipoPago['nombre']));
+}
+if ( $action == 'editTipoPago' ) {
+    $result = $connect->query( "update tipo_pago SET nombre = '".$_POST[ "nombretipoPago" ]."' WHERE id=".$_POST[ "btnhIdtipoPago" ] );
+    echo json_encode(array('result'=>$result));
 }
 
 ?>

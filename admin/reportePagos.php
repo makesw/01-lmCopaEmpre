@@ -9,6 +9,7 @@ if ( !isset( $_SESSION[ 'dataSession' ] ) ) {
 }
 require '../conexion.php';
 $resultCompetencias = $connect->query( "select * from competicion WHERE activa=1 and (id_parent is null or id_parent= 0) order by nombre asc" );
+$resultTipoPagos = $connect->query( "select * from tipo_pago order by nombre asc" );
 $idCompRld=0;
 if(isset($_GET[ 'idComp' ])){
 	$idCompRld = $_GET[ 'idComp' ];
@@ -99,7 +100,7 @@ header('Pragma: no-cache');
 		<!-- Main content -->
 		<div class="main-content">
 			<form id="formJuegos">
-			<h1 class="page-title">Administración / Pagos</h1>
+			<h1 class="page-title">Administración / Reporte de Pagos</h1>
 			<div class="row">			
 			<div class="col-lg-12">
 				<div class="panel panel-default">
@@ -120,7 +121,7 @@ header('Pragma: no-cache');
 				
 			</div>
 			</div>	
-			<h1 class="page-title">Listado de Pagos por equipo a la fecha:</h1>		
+			<h1 class="page-title">Listado de pagos por equipo:</h1>		
 			<div class="row">
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">
@@ -162,140 +163,20 @@ header('Pragma: no-cache');
 <script src="../js/plugins/datatables/jszip.min.js"></script>
 <script src="../js/plugins/datatables/pdfmake.min.js"></script>
 <script src="../js/plugins/datatables/vfs_fonts.js"></script>
-
-<div id="modal-pag" class="modal fade" tabindex="-1" role="dialog">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title"><div id="title-regAbono">Registrar Abono</div></h4>
-			</div>
-			<div class="modal-body">
-				<form class="form-horizontal" id="formRegistrarAbono" method="post">					
-					<div class="form-group"> 
-						<label class="col-sm-2 control-label" for="nombre">Fecha</label> 
-						<div class="col-sm-10"> 
-							<input type="date" name="fecha" id="fecha" required>
-						 </div> 
-					</div>	
-					<div class="form-group"> 
-						<label class="col-sm-2 control-label" for="nombre">Valor$</label> 
-						<div class="col-sm-10"> 
-							<input type="number" placeholder="$valor" id="valor" name="valor" class="form-control"  required>
-						</div> 
-					</div>
-					<div class="form-group"> 
-						<label class="col-sm-2 control-label" for="nombre">Detalle</label> 
-						<div class="col-sm-10"> 
-							<input type="text" placeholder="Detalle" id="detalle" name="detalle" class="form-control"  required>
-						</div> 
-					</div>
-					<div class="form-group"> 
-						<div class="col-sm-offset-2 col-sm-10"> 
-							<button type="submit" class="btn btn-primary">Registrar</button> 
-						</div> 
-					</div> 
-					<input type="hidden" id="hdIdEqui" name="hdIdEqui" value="" />
-					<input type="hidden" id="hdIdComp" name="hdIdComp" value="" />
-					<input type="hidden" id="hdIdDto" name="hdIdDto" value="" />
-				</form>
-			</div>
-		</div>
-		<!-- /.modal-content -->
-	</div>
-	<!-- /.modal-dialog -->
-</div>
+<script src="https://cdn.datatables.net/plug-ins/1.10.20/api/sum().js"></script>
 </body>
 </html>
 <script>
-
 $(document).ready(function(){
    $("#cmbComp").change(function () {
 	 idCompSel = $(this).val();
 	 $("#divPagosContent").load('ajaxPagos.php?opt=1&idComp='+idCompSel); 
    })
 });	
-function fnAddPago( idEquipo ) {
-	$("#hdIdComp").val($("#cmbComp").val());
-	$("#hdIdEqui").val(idEquipo);
-	$("#title-regAbono").text("Registrar Abono");
-	$('#modal-pag').modal('show');
-}
-function fnAddDto( idEquipo ) {
-	$("#hdIdComp").val($("#cmbComp").val());
-	$("#hdIdEqui").val(idEquipo);
-	$("#hdIdDto").val(1);	
-	$("#title-regAbono").text("Registrar Descuento");	
-	$('#modal-pag').modal('show');
-}
-jQuery( document ).on( 'submit', '#formRegistrarAbono', function ( event ) {
-	$.ajax( {
-		url: 'server.php?action=addAbono',
-		type: 'POST',
-		data: new FormData( this ),
-		success: function ( data ) {
-			//console.log( data );
-			location.href = './pagos.php?idComp='+$("#cmbComp").val();
-		},
-		error: function ( data ) {
-			//console.log( data );
-		},
-		cache: false,
-		contentType: false,
-		processData: false
-	} );
-	return false;
-} );
 idCompRld=<?php echo($idCompRld); ?>;
 if( idCompRld != 0 ){
 	$("#cmbComp").val(idCompRld);
 	$("#divPagosContent").load('ajaxPagos.php?opt=1&idComp='+idCompRld); 
 }
-function delDctos( idEquipo, idComp ) {
-	if ( confirm( 'Confirma Eliminar?' ) ) {
-		$.ajax( {
-			url: 'server.php?action=delDtos&idEquipo='+idEquipo+'&idComp='+idComp,
-			type: 'POST',
-			data: new FormData(  ),
-			success: function ( data ) {
-				//console.log( data );
-				location.href = './pagos.php?idComp='+idComp;
-				//location.reload();
-			},
-			error: function ( data ) {
-				//console.log( data );
-			},
-			cache: false,
-			contentType: false,
-			processData: false
-		} );
-	}
-}	
-</script>
-<script>
-$(document).ready(function () {
-$('.dataTables-pagos').DataTable({
-	"searching": true,
-	"bSort" : false,
-	"bLengthChange": false,
-	"bInfo": false,
-	"pageLength": 20,
-	dom: '<"html5buttons" B>lTfgitp',
-		buttons: [				
-			{
-				extend: 'excelHtml5',
-				exportOptions: {
-					columns: ':visible'
-				}
-			},
-			{
-				extend: 'pdfHtml5',
-				exportOptions: {
-					columns: ':visible'
-				}
-			}
-		]
-});
-});
 </script>
 <?php $connect->close(); ?>

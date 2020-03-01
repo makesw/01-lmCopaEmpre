@@ -11,10 +11,11 @@ require '../conexion.php';
 
 if(isset($_GET[ 'opt' ]) && $_GET[ 'opt' ]==1 ){
 $idComp = isset($_GET[ 'idComp' ])?$_GET[ 'idComp' ]:0;
-//Consultar datos de la competicion:
+//Consultar competicion:
 $competicion = mysqli_fetch_array($connect->query( "select * from competicion where id =".$idComp ));	
-//Consultar equipos de la competicion:
-$resultequipos = $connect->query( "select e.* from equipo e join inscripcion i on e.id = i.id_equipo and i.id_competicion =".$idComp );	
+//Consultar pagos de competicion
+$resultPagos = $connect->query( "select p.*, e.nombre, tp.nombre tipoPago from pago p join equipo e on p.id_equipo = e.id and p.id_competicion = ".$idComp."  
+and (descuento is null or descuento =0) and UPPER(detalle) not like '%INSCRIP%' left join tipo_pago tp on p.id_tipo_pago = tp.id order by  e.nombre asc" );	
 	
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Cache-Control: post-check=0, pre-check=0', false);
@@ -26,79 +27,46 @@ header('Pragma: no-cache');
 <thead>
 	<tr>		
 		<th>Equipo</th>
-		<th>Competición</th>
-		<th>Valor</th>
-		<th>Abonado</th>
-		<th>Descuento</th>								
-		<th>Saldo</th>
-		<th></th>
+		<th>Valor Pagado</th>
+		<th>Fecha</th>
+		<th>Tipo de Pago</th>
+		<th>Descripción</th>
 	</tr>
 </thead>
 <tbody>
 <?php
-$totalAbonado = 0;
-$totalDescuentos = 0;
-$totalSaldo = 0;
-while($rowEquipo = mysqli_fetch_array($resultequipos)){
-	
-//Consultar descuentos otorgados al equipo en la competencia	
-$descuentosEquipo = mysqli_fetch_array($connect->query(("select ifnull(sum(abono),0) total from pago where id_equipo = ".$rowEquipo['id']." and id_competicion = ".$idComp." and descuento =1" )));
-	
-//Consultar pagos del equipo en la competencia
-$pagosEquipo = mysqli_fetch_array($connect->query(("select ifnull(sum(abono),0) total from pago where id_equipo = ".$rowEquipo['id']." and id_competicion = ".$idComp." and (descuento is null or descuento =0)" )));	
-	
-//Calcular saldo de la competencia:
-$saldo = $competicion['valor'] - $pagosEquipo['total'] - $descuentosEquipo['total'];
-
-$totalAbonado += $pagosEquipo['total'];	
-$totalDescuentos += $descuentosEquipo['total'];
-$totalSaldo += $saldo;
-
+$total = 0;
+while($row = mysqli_fetch_array($resultPagos)){    
+    $date_f = new DateTime($row['fecha']);
+    $date_f = $date_f->format('d-m-Y');
+    $total += $row['abono'];
 ?>	
 <tr>	
-	<td> <?php echo $rowEquipo['nombre']; ?>	</td>
-	<td> <?php echo $competicion['nombre']; ?>	</td>
-	<td> <?php echo '$ '.number_format($competicion['valor']); ?>	</td>
-	<td style="color:#016910;"> <strong><?php echo '$ '.number_format($pagosEquipo['total']); ?></strong>	</td>
-	<td> <?php echo $descuentosEquipo['total']; ?>	</td>
-	<td style="color:#ef4040;"> <strong><?php echo '$ '.number_format($saldo); ?></strong>	</td>	
-	<td>
-		<div class="btn-group">
-			  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Acciones <span class="caret"></span>
-			  </button>
-			  <ul class="dropdown-menu">
-				<li><a href="javascript:fnAddPago(<?php echo $rowEquipo['id']; ?>);">Agregar Pago</a></li>
-				<li><a href="javascript:fnAddDto(<?php echo $rowEquipo['id']; ?>);">Agregar Descuento</a></li>
-				  <li><a href="javaScript:delDctos('<?php echo $rowEquipo['id']; ?>','<?php echo $competicion['id']; ?>');">Eliminar Descuento</a></li>
-				<li><a href="pagosDetalle.php?idEqui=<?php echo $rowEquipo['id']; ?>&id_comp=<?php echo $_GET['idComp']; ?>">Ver Detalle</a></li>
-			  </ul>
-		</div>
-	</td>
+	<td><?=$row['nombre'];?></td>
+	<td><?='$ '.number_format($row['abono']);?></td>
+	<td><?=$date_f;?></td>
+	<td><?=$row['tipoPago']; ?>	</td>
+	<td><?=$row['detalle'];?></strong>	</td>
 </tr>
 <?php } ?>
 </tbody >
 <tfoot>
 	<tr>
 		<th></th>
+		<th><div id="divSum">00</div></th>
 		<th></th>
 		<th></th>
-		<th> $ <?php echo number_format($totalAbonado); ?></th>
-		<th> $ <?php echo number_format($totalDescuentos); ?></th>
-		<th> $ <?php echo number_format($totalSaldo); ?></th>
 		<th></th>
 	</tr>
 </tfoot>
 </table>
 </div>
-
 <?php } ?>
-
 <script>
 $(document).ready(function () {
-$('.dataTables-pagos').DataTable({
+$table = $('.dataTables-pagos').DataTable({
 	"searching": true,
-	"bSort" : false,
+	"bSort" : true,
 	"bLengthChange": false,
 	"bInfo": false,
 	"pageLength": 20,
@@ -108,12 +76,25 @@ $('.dataTables-pagos').DataTable({
 	dom: '<"html5buttons" B>lTfgitp',
 		buttons: [				
 			{
-				extend: 'excelHtml5', footer: true, title: 'ConsolidadoPagos',
+				extend: 'excelHtml5', footer: true, title: 'ReportePagos_<?=$competicion['nombre'];?>',
 				exportOptions: {
-					columns: [ 0, 1, 2, 3, 4, 5 ]
+					columns: [ 0, 1, 2, 3, 4 ]
 				}
 			}
-		]
+		],
+	drawCallback: function () {	  
+      var api = this.api();
+      $( '#divSum' ).text('$ '+new Intl.NumberFormat("es-CO").format(api.column( 1, {filter:'applied'} ).data().sum()));
+      /*$( api.table().footer() ).html(
+		'<tr>'+
+    		'<th></th>'+
+    		'<th><strong> $'+ new Intl.NumberFormat("es-CO").format(api.column( 1, {filter:'applied'} ).data().sum()) +'</strong></th>'+
+    		'<th></th>'+
+    		'<th></th>'+
+    		'<th></th>'+
+    	'</tr>'       
+      );*/
+    }
 });
 });
 </script>
