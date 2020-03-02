@@ -16,7 +16,6 @@ if(isset($_GET[ 'idComp' ])){
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -112,6 +111,11 @@ if(isset($_GET[ 'idComp' ])){
 								}
 								?> 
 							</select>
+						  </div>
+						  <div class="form-group">
+							<label for="password">Fase</label>
+							<select class="form-control" required id="cmbFase" name="cmbFase">
+							</select>
 						  </div>				
 					</div>
 				</div>			
@@ -127,7 +131,14 @@ if(isset($_GET[ 'idComp' ])){
 				</div>			
 				
 			</div>
-			</div>		
+			</div>
+			<div class="row">			
+			<div class="col-lg-12">
+					<div class="panel-body">
+						<div id="divJuegoContent"></div>						
+					</div>								
+			</div>
+			</div>			
 			<!-- Footer -->
 			<?php include("./footer.html");?>
 			<!-- /footer -->
@@ -166,8 +177,20 @@ if(isset($_GET[ 'idComp' ])){
 idComp=<?php echo($idComp); ?>;
 $(document).ready(function(){
    $("#cmbComp").change(function () {
-	 $("#divJLContent").load('ajaxJuegoLimpio.php?idComp='+$("#cmbComp").val());	  	
+   		$("#cmbComp option:selected").each(function () {
+            elegido=$(this).val();
+			idComp = elegido;
+            $.post("ajaxFases.php", { elegido: elegido }, function(data){
+            	$("#cmbFase").html(data);
+            });            
+        });
    })
-});	
+});
+$(document).ready(function(){
+   $("#cmbFase").change(function () {
+	 idFase = $(this).val();
+	 $("#divJuegoContent").load('ajaxJuegoLimpio.php?idComp='+$("#cmbComp").val()+'&idFase='+idFase);	  	  	
+   })
+});
 </script>
 <?php $connect->close(); ?>
