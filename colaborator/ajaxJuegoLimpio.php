@@ -26,7 +26,7 @@ while($row = mysqli_fetch_array($resultEquipos)){
     $juegoLimpio = mysqli_fetch_array($connect->query( "select sum(ts.puntos) pstJL from juego j join equipo e
     on (j.id_equipo_1 = e.id or j.id_equipo_2 = e.id) and e.id = ".$row['id']." and j.id_competicion = ".$idComp." and j.informado =1 join fase f
     on j.id_fase = f.id and j.id_fase=".$idFase."  join sancion s on j.id = s.id_juego join tipo_sancion ts on s.id_tipo_sancion = ts.id join
-    jugador ju on s.id_jugador = ju.id order by pstJL desc"));
+    jugador ju on s.id_jugador = ju.id and ju.id_equipo = ".$row['id']." order by pstJL desc"));
     
     if( $cantidadJuegos['total'] > 0){
         $promedioJl = $juegoLimpio['pstJL'] / $cantidadJuegos['total'];
