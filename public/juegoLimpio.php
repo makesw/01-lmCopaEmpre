@@ -5,6 +5,7 @@ if(isset($_GET[ 'idComp' ])){
 	$idComp = $_GET[ 'idComp' ];
 }
 $competicion = $connect->query( "select * from competicion where id=".$idComp);
+$fases = $connect->query( "select * from fase where id_competicion=".$idComp);
 if( $competicion != null ){
 	$competicion = mysqli_fetch_array($competicion);
 }
@@ -68,7 +69,22 @@ header('Pragma: no-cache');
 			<form id="formJuegos">
 			<h1 class="page-title"><a href="estadisticas.php?idComp=<?php echo $idComp;?>">Estadísticas</a>/Juego Limpio/<?php echo $competicion['nombre'];?></h1>
 			<div class="row">	
-			<div class="row">			
+			<div class="row">
+			<div class="col-lg-12">
+				<div class="class="panel panel-minimal"t">
+					<div class="panel-body">
+						<label for="password">Fase</label>
+						<select class="form-control" required id="cmbFases" name="cmbFases"> 
+							<option value="0">Seleccione una fase</option><?php
+							while ( $row = mysqli_fetch_array( $fases ) ) {
+								echo "<option value='" . $row[ 'id' ] . "'>" . $row[ 'nombre' ] . "</option>";
+							}
+							?> 
+						</select>						
+					</div>
+				</div>			
+				
+			</div>		
 			<div class="col-lg-12">
 				<div class="class="panel panel-minimal"t">
 					<div class="panel-body">
@@ -110,9 +126,14 @@ header('Pragma: no-cache');
 </body>
 </html>
 <script>
-idComp=<?php echo($idComp); ?>;
 $(document).ready(function(){
- $("#divJLContent").load('ajaxJuegoLimpio.php?idComp='+idComp);	  	  
-});	
+   $("#cmbFases").change(function () {
+   		$("#cmbFases option:selected").each(function () {
+            elegido=$(this).val();
+			idFase = elegido;
+			 $("#divJLContent").load('ajaxJuegoLimpio.php?idComp=<?=$idComp?>'+'&idFase='+idFase);	          
+        });
+   })
+});
 </script>
 <?php $connect->close(); ?>
