@@ -14,7 +14,7 @@ setlocale (LC_TIME,"spanish");
 date_default_timezone_set('America/Bogota');
 //Consutar equipos de la competiciòn:
 $resultEquipoPuntos = $connect->query( "select e.id, e.nombre, f.nombre fase, sum(ts.puntos) pstJL from juego j join fase f on j.id_fase = f.id and 
-f.id_competicion = ".$idComp." and  j.id_fase = ".$idFase." join sancion s on j.id = s.id_juego join tipo_sancion ts on s.id_tipo_sancion = ts.id join 
+f.id_competicion = ".$idComp." and  j.id_fase = ".$idFase." and j.informado = 1 join sancion s on j.id = s.id_juego join tipo_sancion ts on s.id_tipo_sancion = ts.id join 
 jugador ju on s.id_jugador = ju.id join equipo e on ju.id_equipo = e.id group by e.id order by pstJL desc");
 //generar arreglo EquipoPuntos:
 $arrayData = array();
