@@ -12,7 +12,8 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 require '../conexion.php';
 //las del ultimo año:
-$resultCompetencias = $connect->query( "select * from competicion WHERE  now() <= ADDDATE(DATE(fecha_creacion), interval 1  YEAR) order by fecha_creacion desc,nombre asc" );
+//$resultCompetencias = $connect->query( "select * from competicion WHERE  now() <= ADDDATE(DATE(fecha_creacion), interval 1  YEAR) order by fecha_creacion desc,nombre asc" );
+$resultCompetencias = $connect->query( "select * from competicion order by fecha_creacion desc,nombre asc" );
 ?>
 <!DOCTYPE html>
 <html lang="en">
