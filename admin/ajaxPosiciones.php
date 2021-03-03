@@ -338,7 +338,8 @@ function ordenarPorCriterio( $criterio, $matrizEmpateTemp ){
 	global $persisteEmpate;
 	for( $i = 0; $i < count($matrizEmpateTemp) - 1; $i++)
         {
-            for($j = 0; $j < count($matrizEmpateTemp) - 1; $j++)
+            $contador = 0;
+			for($j = 0; $j < count($matrizEmpateTemp) - 1; $j++)
             {
 				if( $operador == "menor"){
 					if ($matrizEmpateTemp[$j][$criterio] < $matrizEmpateTemp[$j + 1][$criterio])
@@ -347,7 +348,7 @@ function ordenarPorCriterio( $criterio, $matrizEmpateTemp ){
 						$matrizEmpateTemp[$j+1] = $matrizEmpateTemp[$j];
 						$matrizEmpateTemp[$j] = $tmp;					
 					}else if ($matrizEmpateTemp[$j][$criterio] == $matrizEmpateTemp[$j + 1][$criterio]){
-						$persisteEmpate = true;
+						$contador ++;
 					}
 				}else if($operador == "mayor"){
 					if ($matrizEmpateTemp[$j+1][$criterio] > $matrizEmpateTemp[$j][$criterio])
@@ -358,10 +359,13 @@ function ordenarPorCriterio( $criterio, $matrizEmpateTemp ){
 					}else if ($matrizEmpateTemp[$j+1][$criterio] == $matrizEmpateTemp[$j][$criterio]){
 						//validar gaador por penales
 						
-						$persisteEmpate = true;
+						$contador ++;
 					}
 				}
             }
+			if( count($matrizEmpateTemp)-1 == $contador ){ //solo si empatan todos
+				$persisteEmpate = true;
+			}			
 	}
 }
 ?>
